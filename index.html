@@ -1298,8 +1298,6 @@ async function getCrypto() {
 const FINNHUB_KEY = 'd6kptghr01qmopd1m2o0d6kptghr01qmopd1m2og';
 
 async function getStocks() {
-  const dow = new Date().getDay();
-  const marketClosed = (dow === 0 || dow === 6);
   await Promise.all(S.stocks.map(async s => {
     try {
       const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${s.sym}&token=${FINNHUB_KEY}`, {signal: AbortSignal.timeout(9000)});
@@ -1308,8 +1306,8 @@ async function getStocks() {
       if (d.c && d.pc) {
         S.sp[s.sym] = {
           price: d.c, prevClose: d.pc,
-          change: marketClosed ? 0 : ((d.c - d.pc) / d.pc) * 100,
-          changeAmt: marketClosed ? 0 : d.c - d.pc,
+          change: ((d.c - d.pc) / d.pc) * 100,
+          changeAmt: d.c - d.pc,
           high: d.h, low: d.l
         };
       }
@@ -1347,13 +1345,18 @@ async function fetchYahooCandles(sym, range) {
   const proxies = [
     `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
   ];
   for (const proxy of proxies) {
     try {
       const r = await fetch(proxy, {signal: AbortSignal.timeout(10000)});
       if (!r.ok) continue;
-      let json = await r.json();
-      if (json.contents) json = JSON.parse(json.contents);
+      const text = await r.text();
+      let body = text;
+      try { const j = JSON.parse(text); if (j && typeof j.contents === 'string') body = j.contents; } catch (_) {}
+      let json;
+      try { json = JSON.parse(body); } catch (_) { continue; }
       const result = json?.chart?.result?.[0];
       if (!result) continue;
       const t  = result.timestamp;
@@ -1368,6 +1371,28 @@ async function fetchYahooCandles(sym, range) {
       if (data.length >= 2) return data;
     } catch(_) {}
   }
+  // Last-resort fallback: Stooq (no CORS issues, free, daily candles for US stocks)
+  try {
+    const today = new Date();
+    const yearStart = new Date(today.getFullYear(), 0, 1);
+    const rangeDays = { '5d': 5, '1mo': 31, '3mo': 93, '6mo': 186, '1y': 366, '5y': 1830, 'ytd': Math.ceil((today - yearStart) / 86400000) + 1 };
+    const days = rangeDays[range] || 31;
+    const d1 = new Date(today.getTime() - days * 86400000);
+    const fmt = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const stooqUrl = `https://stooq.com/q/d/l/?s=${sym.toLowerCase()}.us&d1=${fmt(d1)}&d2=${fmt(today)}&i=d`;
+    const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(stooqUrl)}`, { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return null;
+    const csv = await r.text();
+    const lines = csv.trim().split('\n').slice(1);     // drop header
+    const data = lines.map(line => {
+      const cols = line.split(',');
+      const ts = new Date(cols[0]).getTime();
+      const close = parseFloat(cols[4]);
+      const open = parseFloat(cols[1]);
+      return { t: ts, p: close, o: isNaN(open) ? close : open };
+    }).filter(x => !isNaN(x.t) && !isNaN(x.p));
+    if (data.length >= 2) return data;
+  } catch (_) {}
   return null;
 }
 
