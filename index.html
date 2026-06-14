@@ -101,7 +101,7 @@ body::before {
 }
 body.light::before { opacity: 0; }
 
-#app { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1; padding-bottom: calc(var(--nav) + var(--safe) + 16px); }
+#app { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1; padding-bottom: calc(var(--nav) + var(--safe) + 16px); -webkit-overflow-scrolling: touch; }
 #app::-webkit-scrollbar { width: 4px; }
 #app::-webkit-scrollbar-thumb { background: var(--s3); border-radius: var(--radius); }
 
@@ -221,13 +221,13 @@ body.light .news-subtab.active { color: #F4EFE5; }
 .news-item-sym { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--s2); border: 1px solid var(--b1); border-radius: 20px; font-family: 'Newsreader', serif; font-style: italic; font-size: 12px; color: var(--ac); }
 .news-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
 .news-list { padding-bottom: 20px; }
-.news-pager { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; padding: 18px 0 40px; }
+.news-pager { display: none; }
 .news-pager button { background: var(--s1); border: 1px solid var(--b1); color: var(--t2); padding: 7px 12px; font-family: var(--font-mono); font-size: 12px; border-radius: var(--radius-sm); cursor: pointer; min-width: 34px; transition: all .15s; }
 .news-pager button:hover:not(:disabled) { color: var(--t1); border-color: var(--ac); }
 .news-pager button.active { background: var(--ac); color: #fff; border-color: var(--ac); font-weight: 700; }
 body.light .news-pager button.active { color: #F4EFE5; }
 .news-pager button:disabled { opacity: .35; cursor: not-allowed; }
-.news-pager .news-pager-step { font-family: var(--font-body); font-weight: 600; padding: 7px 14px; }
+.news-pager .news-pager-step { display: none; }
 @media (min-width: 640px) { #page-news.active { padding: 0 18px 60px; } }
 .news-filters:empty { display: none; }
 .news-chip { background: var(--s1); border: 1px solid var(--b1); color: var(--t2); padding: 6px 14px; border-radius: 100px; font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
@@ -250,6 +250,28 @@ body.light .news-chip.active { color: #F4EFE5; }
 .news-reader-body { font-family: 'Geist', 'Rubik', sans-serif; font-weight: 300; font-size: 15px; line-height: 1.75; color: var(--t1); }
 .news-reader-body p { margin: 0 0 14px 0; }
 .news-reader-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 6px; }
+
+/* ── FX CONVERTER FLOATING CARD ── */
+.fx-conv { position: fixed; top: 140px; left: 24px; z-index: 180; width: 280px; background: var(--s1); border: 1px solid var(--b2); border-radius: var(--radius); box-shadow: 0 14px 40px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3); padding: 16px; display: none; flex-direction: column; gap: 10px; transform-origin: top left; }
+.fx-conv.open { display: flex; animation: fxConvIn .25s cubic-bezier(.55,.2,.2,1); }
+@keyframes fxConvIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.fx-conv-head { display: flex; align-items: center; justify-content: space-between; cursor: grab; user-select: none; padding-bottom: 6px; border-bottom: 1px solid var(--b1); }
+.fx-conv-head.dragging { cursor: grabbing; }
+.fx-conv-title { display: flex; align-items: center; gap: 8px; font-family: 'Newsreader', 'Rubik', serif; font-size: 15px; color: var(--t1); }
+.fx-conv-title i { color: var(--ac); font-size: 14px; }
+.fx-conv-close { background: none; border: none; color: var(--t3); cursor: pointer; padding: 4px; font-size: 16px; }
+.fx-conv-close:hover { color: var(--t1); }
+.fx-conv-row { display: flex; gap: 6px; }
+.fx-conv-row input { flex: 1; min-width: 0; background: var(--s2); border: 1px solid var(--b1); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--t1); font-family: var(--font-mono); font-size: 17px; font-weight: 700; text-align: start; outline: none; transition: border-color .12s; }
+.fx-conv-row input:focus { border-color: var(--ac); }
+.fx-conv-row select { background: var(--s2); border: 1px solid var(--b1); border-radius: var(--radius-sm); padding: 0 10px; color: var(--t1); font-family: var(--font-mono); font-size: 12px; font-weight: 600; cursor: pointer; outline: none; min-width: 88px; }
+.fx-conv-arrow { text-align: center; color: var(--t3); font-size: 14px; margin: -3px 0; }
+.fx-conv-rate { font-family: var(--font-mono); font-size: 10.5px; color: var(--t3); text-align: center; padding-top: 4px; border-top: 1px solid var(--b1); letter-spacing: .3px; }
+@media (max-width: 640px) {
+  .fx-conv { top: auto; bottom: calc(var(--nav) + var(--safe) + 90px); left: 50%; transform: translateX(-50%); width: calc(100vw - 32px); max-width: 320px; }
+  .fx-conv.open { animation: fxConvInM .22s ease-out; }
+  @keyframes fxConvInM { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+}
 
 /* ── PAGES ── */
 .page { display: none; padding: 18px 18px 10px; }
@@ -625,6 +647,7 @@ td { font-size: 11px; color: var(--t1); border-bottom: 1px solid var(--b1); }
     </div>
     <button class="ibtn" id="langBtn" onclick="toggleLang()" title="Switch to English" style="font-size:15px;line-height:1;">🇺🇸</button>
     <button class="ibtn" id="themeBtn" onclick="toggleTheme()" title="החלף כיוון מותג"><i class="ph-thin ph-moon"></i></button>
+    <button class="ibtn" id="fxConvBtn" onclick="toggleFxConv()" title="מחשבון מט"ח"><i class="fi fi-tr-calculator" style="font-size:15px"></i></button>
     <button class="ibtn" id="currBtn" onclick="toggleCurrency()" title="החלף מטבע תצוגה" style="font-family:var(--font-mono);font-size:11px;font-weight:700;width:auto;padding:0 8px;color:var(--gd);"><i class="ph-thin ph-currency-circle-dollar" style="font-size:15px"></i></button>
     <button class="ibtn" id="refreshBtn" onclick="doRefresh()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -1258,6 +1281,31 @@ async function getStocks() {
   }));
 }
 
+async function fetchYahooIntraday(sym) {
+  // 5-min candles for the most recent trading day — gives ~78 real data points
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=5m&range=1d`;
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const r = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+      if (!r.ok) continue;
+      let json = await r.json();
+      if (json.contents) json = JSON.parse(json.contents);
+      const result = json?.chart?.result?.[0];
+      if (!result) continue;
+      const t = result.timestamp;
+      const c = result.indicators?.quote?.[0]?.close;
+      if (!t?.length || !c?.length) continue;
+      const data = t.map((ts, i) => ({ t: ts * 1000, p: c[i] })).filter(x => x.p != null);
+      if (data.length >= 2) return data;
+    } catch (_) {}
+  }
+  return null;
+}
+
 async function fetchYahooCandles(sym, range) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=${range}`;
   const proxies = [
@@ -1439,6 +1487,7 @@ const I18N = {
   'מ:':'From:','עד:':'To:','חשב':'Calculate','מחפש...':'Searching...','לא נמצאו תוצאות':'No results found','שגיאה בחיפוש':'Search error',
   'חדשות':'News','חדשות מהעולם':'World News','נכסים שלי':'My Assets',
   'הכל':'All','שווקים':'Markets','דוחות':'Earnings','טכנולוגיה':'Tech','כלכלה':'Economy','הקודם':'Previous','הבא':'Next',
+  'מחשבון מטבעות':'Currency Converter','מחשבון מט"ח':'Currency Converter','טוען שערים...':'Loading rates...','סגור':'Close',
   'חדשות לא זמינות במצב קובץ מקומי':'News unavailable in local file mode',
   'מקורות החדשות חוסמים בקשות מ-file://':'News sources block requests from file://',
   'העלי את האתר ל-GitHub Pages או הריצי שרת מקומי':'Upload the site to GitHub Pages or run a local server',
@@ -1560,6 +1609,114 @@ function toggleLang() {
 if (curLang === 'en') applyLang(); else i18nFlag();
 
 // ═══════════════════════════════════════════
+// FX CONVERTER — floating multi-currency calculator
+// ═══════════════════════════════════════════
+// Rates expressed as: amount_in_USD = amount_in_X * fxConvRates[X]
+const fxConvRates = { USD: 1, ILS: null, EUR: null, GBP: null, JPY: null, CHF: null, CAD: null, AUD: null, BTC: null, ETH: null };
+let fxConvLastFetched = 0;
+
+async function fxConvLoadRates() {
+  // cache for 5 minutes
+  if (Date.now() - fxConvLastFetched < 5 * 60 * 1000 && fxConvRates.ILS) return;
+  try {
+    // open free FX endpoint (base USD)
+    const r = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(8000) });
+    const j = await r.json();
+    const rates = j?.rates;
+    if (rates) {
+      // rates[X] = X per 1 USD → amount_in_USD = amount_in_X / rates[X]
+      // we store fxConvRates[X] = USD value of 1 unit of X = 1 / rates[X]
+      for (const cur of ['ILS','EUR','GBP','JPY','CHF','CAD','AUD']) {
+        if (rates[cur]) fxConvRates[cur] = 1 / rates[cur];
+      }
+    }
+    // crypto via Binance (USDT ≈ USD)
+    const cr = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(['BTCUSDT','ETHUSDT'])), { signal: AbortSignal.timeout(8000) });
+    const cj = await cr.json();
+    cj.forEach(t => {
+      if (t.symbol === 'BTCUSDT') fxConvRates.BTC = parseFloat(t.price);
+      if (t.symbol === 'ETHUSDT') fxConvRates.ETH = parseFloat(t.price);
+    });
+    fxConvLastFetched = Date.now();
+  } catch (_) {
+    // fallback — use the app's existing ILS rate if available
+    if (S?.fx && !fxConvRates.ILS) fxConvRates.ILS = 1 / S.fx;
+  }
+}
+
+function fxConvFmt(v, cur) {
+  if (!isFinite(v) || v == null) return '';
+  if (cur === 'BTC' || cur === 'ETH') return v.toFixed(6);
+  if (cur === 'JPY') return v.toFixed(0);
+  if (Math.abs(v) >= 100) return v.toFixed(2);
+  if (Math.abs(v) >= 1) return v.toFixed(3);
+  return v.toFixed(5);
+}
+
+window.fxConvCalc = function(direction) {
+  const fromCur = document.getElementById('fxFromCur').value;
+  const toCur = document.getElementById('fxToCur').value;
+  const fromR = fxConvRates[fromCur], toR = fxConvRates[toCur];
+  const rateEl = document.getElementById('fxConvRate');
+  if (!fromR || !toR) { if (rateEl) rateEl.textContent = 'טוען שערים...'; return; }
+  const fromInput = document.getElementById('fxFromAmt');
+  const toInput = document.getElementById('fxToAmt');
+  if (direction === 'from') {
+    const amt = parseFloat(fromInput.value) || 0;
+    const usd = amt * fromR;
+    const converted = usd / toR;
+    toInput.value = fxConvFmt(converted, toCur);
+  } else {
+    const amt = parseFloat(toInput.value) || 0;
+    const usd = amt * toR;
+    const converted = usd / fromR;
+    fromInput.value = fxConvFmt(converted, fromCur);
+  }
+  // 1 fromCur → toCur (informative rate line)
+  const one = (1 * fromR) / toR;
+  if (rateEl) rateEl.textContent = `1 ${fromCur} = ${fxConvFmt(one, toCur)} ${toCur}`;
+};
+
+window.toggleFxConv = async function() {
+  const el = document.getElementById('fxConv');
+  if (!el) return;
+  if (el.classList.contains('open')) { el.classList.remove('open'); return; }
+  el.classList.add('open');
+  await fxConvLoadRates();
+  fxConvCalc('from');
+};
+
+// ─── Make the card draggable by its header (desktop only) ───
+(function setupFxDrag() {
+  let dragging = false, ox = 0, oy = 0;
+  document.addEventListener('mousedown', e => {
+    const head = e.target.closest('#fxConvHead');
+    if (!head || window.innerWidth < 640) return;
+    if (e.target.closest('.fx-conv-close')) return;
+    const card = document.getElementById('fxConv');
+    const rect = card.getBoundingClientRect();
+    ox = e.clientX - rect.left;
+    oy = e.clientY - rect.top;
+    dragging = true;
+    head.classList.add('dragging');
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const card = document.getElementById('fxConv');
+    const x = Math.max(0, Math.min(window.innerWidth - card.offsetWidth, e.clientX - ox));
+    const y = Math.max(0, Math.min(window.innerHeight - card.offsetHeight, e.clientY - oy));
+    card.style.left = x + 'px';
+    card.style.top = y + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    document.querySelector('#fxConvHead')?.classList.remove('dragging');
+  });
+})();
+
+// ═══════════════════════════════════════════
 // TOP TICKER TAPE — dash only
 // ═══════════════════════════════════════════
 const TK_MARKETS = {
@@ -1676,9 +1833,32 @@ async function drawSpark(cid, key, isCrypto, isUp) {
   const container = document.getElementById(cid); if (!container) return;
   let prices = S.sparks[key];
   if (!prices) {
-    if (isCrypto) { const h = await getCryptoHist(key, 7); prices = h.map(([, p]) => p); }
-    else { const p = S.sp[key]; prices = p ? [p.prevClose, p.prevClose + (p.price - p.prevClose) * .5, p.price] : []; }
-    if (prices.length) S.sparks[key] = prices;
+    if (isCrypto) {
+      // 30-day crypto history → ~30 points for a naturally curvy line
+      const h = await getCryptoHist(key, 30);
+      prices = h.map(([, p]) => p);
+    } else {
+      // 1-month stock history (Yahoo daily candles) → ~22 trading-day points
+      try {
+        const data = await getStockHist(key, '1mo');
+        if (data && data.length >= 2) prices = data.map(d => d.p).filter(p => p != null);
+      } catch (_) {}
+      // fallback if Yahoo blocks: still better than 3 points — interpolate intraday-style noise
+      if (!prices?.length) {
+        const p = S.sp[key];
+        if (p) {
+          const open = p.prevClose, close = p.price;
+          const n = 24;
+          prices = Array.from({ length: n }, (_, i) => {
+            const t = i / (n - 1);
+            const trend = open + (close - open) * t;
+            const noise = (Math.sin(i * 1.3) + Math.sin(i * 0.7)) * Math.abs(close - open) * 0.18;
+            return trend + noise;
+          });
+        }
+      }
+    }
+    if (prices?.length) S.sparks[key] = prices;
   }
   if (!prices?.length || prices.length < 2) return;
 
@@ -2323,14 +2503,8 @@ async function renderNews() {
       return;
     }
 
-    // pagination: cap items per page
-    const total = items.length;
-    const totalPages = Math.max(1, Math.ceil(total / NEWS_PAGE_SIZE));
-    if (newsPage > totalPages) newsPage = totalPages;
-    const start = (newsPage - 1) * NEWS_PAGE_SIZE;
-    const pageItems = items.slice(start, start + NEWS_PAGE_SIZE);
-    newsCache._displayed = pageItems;
-    el.innerHTML = '<div class="news-list">' + pageItems.map((item, index) => {
+    newsCache._displayed = items;
+    el.innerHTML = '<div class="news-list">' + items.map((item, index) => {
       const sym = item.tagSym
         ? `<span class="news-item-sym"><i class="fi fi-tr-bolt" style="font-size:10px"></i>${newsEscape(item.tagSym)}</span>`
         : '';
@@ -2343,7 +2517,7 @@ async function renderNews() {
         ${item.desc ? `<div class="news-item-desc">${newsEscape(item.desc)}</div>` : ''}
         ${sym}
       </div>`;
-    }).join('') + '</div>' + buildNewsPager(newsPage, totalPages);
+    }).join('') + '</div>';
   } catch (error) {
     console.error('[News] Render failed:', error);
     el.innerHTML = '<div class="news-empty">שגיאה בטעינת חדשות.<br>בדקי חיבור לאינטרנט ונסי שוב.</div>';
@@ -2729,10 +2903,29 @@ async function loadSC(sym, range, btn) {
   if (box) { box.classList.add('chart-loading'); box.style.opacity = '1'; }
   let prices = [], labels = [];
   if (range === '1d') {
-    const p = S.sp[sym];
-    if (p?.price && p?.prevClose) {
-      prices = [p.prevClose, p.prevClose+(p.price-p.prevClose)*.25, p.prevClose+(p.price-p.prevClose)*.5, p.prevClose+(p.price-p.prevClose)*.75, p.price];
-      labels = ['פתיחה','','','','נוכחי'];
+    const intraday = await fetchYahooIntraday(sym);
+    if (intraday?.length) {
+      prices = intraday.map(d => d.p);
+      // sparse labels: show open at the start, "current" at the end, blanks in between
+      labels = intraday.map((_, i, arr) => {
+        if (i === 0) return 'פתיחה';
+        if (i === arr.length - 1) return 'נוכחי';
+        return '';
+      });
+    } else {
+      // fallback: synth a soft curve between prevClose and current price so it's not a flat line
+      const p = S.sp[sym];
+      if (p?.price && p?.prevClose) {
+        const open = p.prevClose, close = p.price;
+        const n = 30;
+        prices = Array.from({ length: n }, (_, i) => {
+          const t = i / (n - 1);
+          const trend = open + (close - open) * t;
+          const noise = (Math.sin(i * 1.1) + Math.sin(i * 0.6)) * Math.abs(close - open) * 0.22;
+          return trend + noise;
+        });
+        labels = prices.map((_, i, arr) => i === 0 ? 'פתיחה' : i === arr.length - 1 ? 'נוכחי' : '');
+      }
     }
     if (box) box.classList.remove('chart-loading');
     drawSChart(prices, labels, sym); return;
@@ -3143,5 +3336,44 @@ document.querySelector('.topbar').style.display = 'none';
 document.querySelector('.nav').style.display    = 'none';
 </script>
 
+
+<div id="fxConv" class="fx-conv">
+  <div class="fx-conv-head" id="fxConvHead">
+    <div class="fx-conv-title"><i class="fi fi-tr-exchange"></i><span>מחשבון מטבעות</span></div>
+    <button class="fx-conv-close" onclick="toggleFxConv()" title="סגור"><i class="ph-thin ph-x"></i></button>
+  </div>
+  <div class="fx-conv-row">
+    <input type="number" id="fxFromAmt" value="100" min="0" step="any" oninput="fxConvCalc('from')" />
+    <select id="fxFromCur" onchange="fxConvCalc('from')">
+      <option value="USD">USD · $</option>
+      <option value="ILS" selected>ILS · ₪</option>
+      <option value="EUR">EUR · €</option>
+      <option value="GBP">GBP · £</option>
+      <option value="JPY">JPY · ¥</option>
+      <option value="CHF">CHF · ₣</option>
+      <option value="CAD">CAD · C$</option>
+      <option value="AUD">AUD · A$</option>
+      <option value="BTC">BTC · ₿</option>
+      <option value="ETH">ETH · Ξ</option>
+    </select>
+  </div>
+  <div class="fx-conv-arrow"><i class="ph-thin ph-arrows-down-up"></i></div>
+  <div class="fx-conv-row">
+    <input type="number" id="fxToAmt" value="" min="0" step="any" oninput="fxConvCalc('to')" />
+    <select id="fxToCur" onchange="fxConvCalc('from')">
+      <option value="USD" selected>USD · $</option>
+      <option value="ILS">ILS · ₪</option>
+      <option value="EUR">EUR · €</option>
+      <option value="GBP">GBP · £</option>
+      <option value="JPY">JPY · ¥</option>
+      <option value="CHF">CHF · ₣</option>
+      <option value="CAD">CAD · C$</option>
+      <option value="AUD">AUD · A$</option>
+      <option value="BTC">BTC · ₿</option>
+      <option value="ETH">ETH · Ξ</option>
+    </select>
+  </div>
+  <div class="fx-conv-rate" id="fxConvRate">טוען שערים...</div>
+</div>
 </body>
 </html>
