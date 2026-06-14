@@ -123,7 +123,9 @@ body.light .logo-m { border-radius: 50%; background: var(--ac); color: var(--bg)
 .ibtn:hover { border-color: var(--ac); color: var(--t1); background: var(--s2); }
 .ibtn.spin svg { animation: rot .6s linear; }
 @keyframes rot { to { transform: rotate(360deg); } }
-#ts { font-size: 11px; color: var(--t3); font-family: var(--font-mono); font-weight: 500; margin-right: 4px; }
+#ts { font-size: 11px; color: var(--t3); font-family: var(--font-mono); font-weight: 500; margin-right: 4px; display: inline-flex; align-items: center; gap: 6px; }
+#tsUs { color: var(--gd); letter-spacing: .3px; }
+#ts .clock-sep { color: var(--b2); opacity: .8; }
 
 /* ── BOTTOM NAV ── */
 .nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: var(--s1); border-top: 1px solid var(--b2); display: flex; padding-bottom: var(--safe); height: calc(var(--nav) + var(--safe)); }
@@ -250,6 +252,37 @@ body.light .news-chip.active { color: #F4EFE5; }
 .news-reader-body { font-family: 'Geist', 'Rubik', sans-serif; font-weight: 300; font-size: 15px; line-height: 1.75; color: var(--t1); }
 .news-reader-body p { margin: 0 0 14px 0; }
 .news-reader-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 6px; }
+
+/* ── HAMBURGER MENU (mobile) ── */
+#burgerBtn { display: none; }
+@media (max-width: 640px) {
+  #burgerBtn { display: flex; }
+  #ts { display: none; }   /* clock removed on mobile per user request */
+  .tb-extras {
+    position: absolute;
+    top: calc(100% + 6px);
+    inset-inline-end: 12px;
+    background: var(--s1);
+    border: 1px solid var(--b2);
+    border-radius: var(--radius);
+    padding: 10px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.5);
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    z-index: 160;
+    min-width: 200px;
+  }
+  .tb-extras.open { display: flex; animation: burgerIn .22s cubic-bezier(.55,.2,.2,1); }
+  @keyframes burgerIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .tb-extras .live { width: 100%; justify-content: center; }
+  .tb-extras > div, .tb-extras > button { width: 100%; }
+  .tb-extras .ibtn { width: 100% !important; height: 38px; justify-content: flex-start; padding: 0 12px !important; gap: 10px; }
+}
+@media (min-width: 641px) {
+  .tb-extras { display: contents; }   /* on desktop, render children inline as if no wrapper */
+}
 
 /* ── FX CONVERTER FLOATING CARD ── */
 .fx-conv { position: fixed; top: 140px; left: 24px; z-index: 180; width: 280px; background: var(--s1); border: 1px solid var(--b2); border-radius: var(--radius); box-shadow: 0 14px 40px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3); padding: 16px; display: none; flex-direction: column; gap: 10px; transform-origin: top left; }
@@ -637,24 +670,27 @@ td { font-size: 11px; color: var(--t1); border-bottom: 1px solid var(--b1); }
     <div class="logo-t" id="logoText">Vector<span> · Equities</span></div>
   </div>
   <div class="topbar-r">
-    <div class="live"><div class="dot"></div>LIVE</div>
-    <div style="display:flex;align-items:center;gap:4px;background:var(--s1);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:3px 8px;">
-      <span style="font-size:9px;color:var(--gd);font-weight:700;font-family:var(--font-mono);">ILS</span>
-      <input id="fxInput" type="number" step="0.001" min="2" max="6"
-        style="width:42px;background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--font-mono);font-size:11px;font-weight:700;"
-        onchange="S.fx=parseFloat(this.value)||S.fx;document.getElementById('fxKpi').textContent='₪'+S.fx.toFixed(3);renderDashCrypto();renderDashStocks();updateKPIs();"
-        title="שער דולר — ניתן לעריכה ידנית">
-    </div>
-    <button class="ibtn" id="langBtn" onclick="toggleLang()" title="Switch to English" style="font-size:15px;line-height:1;">🇺🇸</button>
-    <button class="ibtn" id="themeBtn" onclick="toggleTheme()" title="החלף כיוון מותג"><i class="ph-thin ph-moon"></i></button>
-    <button class="ibtn" id="fxConvBtn" onclick="toggleFxConv()" title="מחשבון מט"ח"><i class="fi fi-tr-calculator" style="font-size:15px"></i></button>
-    <button class="ibtn" id="currBtn" onclick="toggleCurrency()" title="החלף מטבע תצוגה" style="font-family:var(--font-mono);font-size:11px;font-weight:700;width:auto;padding:0 8px;color:var(--gd);"><i class="ph-thin ph-currency-circle-dollar" style="font-size:15px"></i></button>
-    <button class="ibtn" id="refreshBtn" onclick="doRefresh()">
+    <button class="ibtn" id="refreshBtn" onclick="doRefresh()" title="רענן נתונים">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
-    <button class="ibtn" onclick="openEditor()"><i class="ph-thin ph-pencil-simple"></i></button>
-    <button class="ibtn" title="התנתק" onclick="doLogout()"><i class="ph-thin ph-sign-out"></i></button>
-    <span id="ts">--:--</span>
+    <button class="ibtn" id="themeBtn" onclick="toggleTheme()" title="החלף כיוון מותג"><i class="ph-thin ph-moon"></i></button>
+    <div class="tb-extras" id="tbExtras">
+      <div class="live"><div class="dot"></div>LIVE</div>
+      <div style="display:flex;align-items:center;gap:4px;background:var(--s1);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:3px 8px;">
+        <span style="font-size:9px;color:var(--gd);font-weight:700;font-family:var(--font-mono);">ILS</span>
+        <input id="fxInput" type="number" step="0.001" min="2" max="6"
+          style="width:42px;background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--font-mono);font-size:11px;font-weight:700;"
+          onchange="S.fx=parseFloat(this.value)||S.fx;document.getElementById('fxKpi').textContent='₪'+S.fx.toFixed(3);renderDashCrypto();renderDashStocks();updateKPIs();"
+          title="שער דולר — ניתן לעריכה ידנית">
+      </div>
+      <button class="ibtn" id="fxConvBtn" onclick="toggleFxConv()" title="מחשבון מט&quot;ח"><i class="fi fi-tr-calculator" style="font-size:15px"></i></button>
+      <button class="ibtn" id="currBtn" onclick="toggleCurrency()" title="החלף מטבע תצוגה" style="font-family:var(--font-mono);font-size:11px;font-weight:700;width:auto;padding:0 8px;color:var(--gd);"><i class="ph-thin ph-currency-circle-dollar" style="font-size:15px"></i></button>
+      <button class="ibtn" id="langBtn" onclick="toggleLang()" title="Switch to English" style="font-size:15px;line-height:1;">🇺🇸</button>
+      <button class="ibtn" onclick="openEditor()"><i class="ph-thin ph-pencil-simple"></i></button>
+      <button class="ibtn" title="התנתק" onclick="doLogout()"><i class="ph-thin ph-sign-out"></i></button>
+      <span id="ts" class="clock-pair"><span id="tsIl">--:--</span><span class="clock-sep">·</span><span id="tsUs" class="clock-us">NY --:--</span></span>
+    </div>
+    <button class="ibtn" id="burgerBtn" onclick="toggleBurger(event)" title="תפריט" aria-label="תפריט"><i class="fi fi-tr-bars-staggered" style="font-size:15px"></i></button>
   </div>
 </div>
 
@@ -1488,6 +1524,7 @@ const I18N = {
   'חדשות':'News','חדשות מהעולם':'World News','נכסים שלי':'My Assets',
   'הכל':'All','שווקים':'Markets','דוחות':'Earnings','טכנולוגיה':'Tech','כלכלה':'Economy','הקודם':'Previous','הבא':'Next',
   'מחשבון מטבעות':'Currency Converter','מחשבון מט"ח':'Currency Converter','טוען שערים...':'Loading rates...','סגור':'Close',
+  'תפריט':'Menu','רענן נתונים':'Refresh data',
   'חדשות לא זמינות במצב קובץ מקומי':'News unavailable in local file mode',
   'מקורות החדשות חוסמים בקשות מ-file://':'News sources block requests from file://',
   'העלי את האתר ל-GitHub Pages או הריצי שרת מקומי':'Upload the site to GitHub Pages or run a local server',
@@ -1607,6 +1644,22 @@ function toggleLang() {
   applyLang();
 }
 if (curLang === 'en') applyLang(); else i18nFlag();
+
+// ═══════════════════════════════════════════
+// HAMBURGER — mobile-only dropdown
+// ═══════════════════════════════════════════
+window.toggleBurger = function(e) {
+  e?.stopPropagation();
+  const el = document.getElementById('tbExtras');
+  if (!el) return;
+  el.classList.toggle('open');
+};
+document.addEventListener('click', e => {
+  const el = document.getElementById('tbExtras');
+  if (!el?.classList.contains('open')) return;
+  if (e.target.closest('#tbExtras') || e.target.closest('#burgerBtn')) return;
+  el.classList.remove('open');
+});
 
 // ═══════════════════════════════════════════
 // FX CONVERTER — floating multi-currency calculator
@@ -2906,11 +2959,11 @@ async function loadSC(sym, range, btn) {
     const intraday = await fetchYahooIntraday(sym);
     if (intraday?.length) {
       prices = intraday.map(d => d.p);
-      // sparse labels: show open at the start, "current" at the end, blanks in between
-      labels = intraday.map((_, i, arr) => {
-        if (i === 0) return 'פתיחה';
-        if (i === arr.length - 1) return 'נוכחי';
-        return '';
+      // labels: actual HH:MM time per 5-minute candle — always in NY time (the market's time)
+      const tzFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' });
+      labels = intraday.map((d, i) => {
+        const t = tzFmt.format(new Date(d.t));
+        return i === 0 ? `NY ${t}` : t;     // mark the timezone only on the first tick
       });
     } else {
       // fallback: synth a soft curve between prevClose and current price so it's not a flat line
@@ -2924,7 +2977,14 @@ async function loadSC(sym, range, btn) {
           const noise = (Math.sin(i * 1.1) + Math.sin(i * 0.6)) * Math.abs(close - open) * 0.22;
           return trend + noise;
         });
-        labels = prices.map((_, i, arr) => i === 0 ? 'פתיחה' : i === arr.length - 1 ? 'נוכחי' : '');
+        // synthetic timestamps: spread across the US trading day (09:30-16:00 → 6.5h = 390 min)
+        labels = prices.map((_, i) => {
+          const minsFromOpen = (i / (prices.length - 1)) * 390;
+          const totalMin = 9 * 60 + 30 + minsFromOpen;
+          const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+          const mm = String(Math.floor(totalMin % 60)).padStart(2, '0');
+          return `${hh}:${mm}`;
+        });
       }
     }
     if (box) box.classList.remove('chart-loading');
@@ -2948,14 +3008,191 @@ function drawSChart(prices, labels, sym) {
   if (S.dChart) { S.dChart.destroy(); S.dChart = null; }
   const up  = prices[prices.length-1] >= prices[0];
   const col = up ? upColor() : downColor();
+  const isLight = document.body.classList.contains('light');
+  // selection state lives on the canvas — survives redraws inside the same chart instance
+  const sel = { active: false, startIdx: null, endIdx: null, dragging: false };
   S.dChart = new Chart(canvas, {
     type:'line',
-    data:{labels,datasets:[{label:'$',data:prices,borderColor:col,borderWidth:2,pointRadius:0,tension:.2,fill:false}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      layout:{padding:0},
-      plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:axisColor(),font:{size:9},maxTicksLimit:6},grid:{display:false},border:{display:false}},y:{ticks:{color:axisColor(),font:{size:9},callback:v=>'$'+v.toFixed(0)},grid:{color:'rgba(127,127,127,0.06)'},border:{display:false},position:'left'}}}
+    data:{labels,datasets:[{
+      label:'$',data:prices,borderColor:col,borderWidth:2,
+      pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:col,pointHoverBorderColor:isLight?'#F4EFE5':'#0A0F1F',pointHoverBorderWidth:2,
+      tension:.2,fill:false
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,layout:{padding:0},
+      interaction:{mode:'index',intersect:false,axis:'x'},
+      hover:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          enabled: !sel.active,        // hide normal tooltip while selecting
+          mode:'index',intersect:false,
+          backgroundColor: isLight ? 'rgba(11,30,63,0.96)' : 'rgba(17,26,51,0.96)',
+          titleColor: isLight ? '#F4EFE5' : '#F1F4FB',
+          bodyColor: isLight ? '#F4EFE5' : '#F1F4FB',
+          borderColor: col, borderWidth: 1,
+          padding: 10, cornerRadius: 8, displayColors: true, boxPadding: 4,
+          titleFont: { family:"'Newsreader', serif", size: 12, weight: '400' },
+          bodyFont:  { family:"'Geist Mono', monospace", size: 13, weight: '700' },
+          callbacks: {
+            title: items => items[0]?.label || '',
+            label: ctx => '$: ' + Number(ctx.parsed.y).toFixed(2),
+          },
+        },
+      },
+      scales:{
+        x:{ticks:{color:axisColor(),font:{size:9},maxTicksLimit:6},grid:{display:false},border:{display:false}},
+        y:{ticks:{display:false},grid:{color:'rgba(127,127,127,0.06)',drawTicks:false},border:{display:false},position:'left'}
+      }
+    },
+    plugins: [{
+      id: 'verticalCrosshair',
+      afterDraw: (chart) => {
+        const active = chart.tooltip?.getActiveElements?.();
+        if (!sel.active && active?.length) {
+          const ctx = chart.ctx;
+          const x = active[0].element.x;
+          const top = chart.chartArea.top, bottom = chart.chartArea.bottom;
+          ctx.save();
+          ctx.beginPath();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = isLight ? 'rgba(11,30,63,0.35)' : 'rgba(241,244,251,0.30)';
+          ctx.lineWidth = 1;
+          ctx.moveTo(x, top); ctx.lineTo(x, bottom);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // selection overlay: shaded band + edge guides + delta label
+        if (sel.active && sel.startIdx != null && sel.endIdx != null && sel.startIdx !== sel.endIdx) {
+          const ctx = chart.ctx;
+          const ca = chart.chartArea;
+          const meta = chart.getDatasetMeta(0);
+          const lo = Math.min(sel.startIdx, sel.endIdx);
+          const hi = Math.max(sel.startIdx, sel.endIdx);
+          const x1 = meta.data[lo].x, x2 = meta.data[hi].x;
+          const p1 = prices[lo], p2 = prices[hi];
+          const diff = p2 - p1;
+          const pct = p1 ? (diff / p1) * 100 : 0;
+          const rising = diff >= 0;
+          const bandCol = rising ? upColor() : downColor();
+
+          // shaded band
+          ctx.save();
+          ctx.fillStyle = (isLight ? 'rgba(11,30,63,' : 'rgba(241,244,251,') + '0.08)';
+          ctx.fillRect(Math.min(x1, x2), ca.top, Math.abs(x2 - x1), ca.bottom - ca.top);
+
+          // edge dashed lines
+          ctx.beginPath();
+          ctx.setLineDash([3, 4]);
+          ctx.strokeStyle = isLight ? 'rgba(11,30,63,0.45)' : 'rgba(241,244,251,0.40)';
+          ctx.lineWidth = 1;
+          ctx.moveTo(x1, ca.top); ctx.lineTo(x1, ca.bottom);
+          ctx.moveTo(x2, ca.top); ctx.lineTo(x2, ca.bottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // dots at both ends
+          [{ x: x1, y: meta.data[lo].y }, { x: x2, y: meta.data[hi].y }].forEach(pt => {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = bandCol;
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = isLight ? '#F4EFE5' : '#0A0F1F';
+            ctx.stroke();
+          });
+
+          // delta label centered above the band
+          const sign = rising ? '+' : '−';
+          const txtVal = `${sign}$${Math.abs(diff).toFixed(2)}`;
+          const txtPct = `${sign}${Math.abs(pct).toFixed(2)}%`;
+          const labelText = `${txtVal}  (${txtPct})`;
+          ctx.font = "700 12px 'Geist Mono', monospace";
+          const w = ctx.measureText(labelText).width + 18;
+          const h = 26;
+          const cx = (x1 + x2) / 2;
+          const lx = Math.max(ca.left + 4, Math.min(ca.right - w - 4, cx - w / 2));
+          const ly = ca.top + 6;
+          ctx.fillStyle = isLight ? 'rgba(11,30,63,0.96)' : 'rgba(17,26,51,0.96)';
+          ctx.strokeStyle = bandCol;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(lx, ly, w, h, 6);
+          else ctx.rect(lx, ly, w, h);
+          ctx.fill(); ctx.stroke();
+          ctx.fillStyle = bandCol;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'center';
+          ctx.fillText(labelText, lx + w / 2, ly + h / 2 + 1);
+          ctx.restore();
+        }
+      }
+    }]
   });
+
+  // ── click & drag range selection ──
+  const getIdxFromEvent = (evt) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (evt.touches?.[0]?.clientX ?? evt.clientX) - rect.left;
+    const ca = S.dChart.chartArea;
+    const meta = S.dChart.getDatasetMeta(0);
+    if (!meta?.data?.length) return null;
+    // clamp inside chart area
+    const xc = Math.max(ca.left, Math.min(ca.right, x));
+    // find nearest point by x
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i < meta.data.length; i++) {
+      const d = Math.abs(meta.data[i].x - xc);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return best;
+  };
+
+  const onDown = (e) => {
+    const idx = getIdxFromEvent(e);
+    if (idx == null) return;
+    sel.active = true; sel.dragging = true; sel.startIdx = idx; sel.endIdx = idx;
+    // suppress hover tooltip while selecting
+    S.dChart.options.plugins.tooltip.enabled = false;
+    S.dChart.update('none');
+    e.preventDefault();
+  };
+  const onMove = (e) => {
+    if (!sel.dragging) return;
+    const idx = getIdxFromEvent(e);
+    if (idx == null) return;
+    sel.endIdx = idx;
+    S.dChart.update('none');
+  };
+  const onUp = () => {
+    if (!sel.dragging) return;
+    sel.dragging = false;
+    // if user just clicked without dragging (start === end), clear the selection
+    if (sel.startIdx === sel.endIdx) {
+      sel.active = false; sel.startIdx = sel.endIdx = null;
+      S.dChart.options.plugins.tooltip.enabled = true;
+      S.dChart.update('none');
+    }
+  };
+
+  // remove old listeners if redrawing — store on canvas
+  if (canvas._selListeners) {
+    canvas.removeEventListener('mousedown', canvas._selListeners.down);
+    canvas.removeEventListener('mousemove', canvas._selListeners.move);
+    window.removeEventListener('mouseup', canvas._selListeners.up);
+    canvas.removeEventListener('touchstart', canvas._selListeners.down);
+    canvas.removeEventListener('touchmove', canvas._selListeners.move);
+    window.removeEventListener('touchend', canvas._selListeners.up);
+  }
+  canvas._selListeners = { down: onDown, move: onMove, up: onUp };
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  canvas.addEventListener('touchstart', onDown, { passive: false });
+  canvas.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onUp);
+  canvas.style.cursor = 'crosshair';
 }
 
 // ═══════════════════════════════════════════
@@ -3186,9 +3423,20 @@ async function doRefresh() {
   if (S.curPage === 'crypto')   renderCryptoPage();
   if (S.curPage === 'insights') renderInsights();
   setTimeout(() => { renderDashCrypto(); renderDashStocks(); updateKPIs(); }, 2500);
-  document.getElementById('ts').textContent = new Date().toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+  updateClocks();
   btn.classList.remove('spin');
 }
+
+
+// ── Dual clock (Israel + New York), updates every 30s ──
+function updateClocks() {
+  const il = document.getElementById('tsIl');
+  const us = document.getElementById('tsUs');
+  if (il) il.textContent = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' });
+  if (us) us.textContent = 'NY ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' });
+}
+updateClocks();
+setInterval(updateClocks, 30000);
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDet(); closeEd(); } });
 
