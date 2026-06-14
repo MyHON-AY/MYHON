@@ -154,7 +154,7 @@ body.light .fab-edit { background: var(--ac); color: #fff; box-shadow: 0 8px 22p
   .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 62; }
   .nav-top { display: flex; position: fixed; top: 62px; left: 0; right: 0; z-index: 61; }
   #tickerBar { display: flex !important; position: fixed !important; top: 108px !important; left: 0; right: 0; z-index: 60; }
-  #app { padding-bottom: 24px; padding-top: 142px; }   /* topbar(62) + nav(46) + ticker(28) + spacing */
+  #app { padding-bottom: 24px; padding-top: 136px; }   /* topbar(62) + nav(46) + ticker(28) = exact */
 }
 
 /* ── TOP TICKER TAPE (dash only) ── */
@@ -220,8 +220,15 @@ body.light .news-subtab.active { color: #F4EFE5; }
 .news-item-desc { font-family: 'Geist', 'Rubik', sans-serif; font-weight: 300; font-size: 12.5px; color: var(--t2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .news-item-sym { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--s2); border: 1px solid var(--b1); border-radius: 20px; font-family: 'Newsreader', serif; font-style: italic; font-size: 12px; color: var(--ac); }
 .news-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-.news-list { padding-bottom: 60px; }
-@media (min-width: 640px) { #page-news.active { padding: 18px 18px 60px; } }
+.news-list { padding-bottom: 20px; }
+.news-pager { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; padding: 18px 0 40px; }
+.news-pager button { background: var(--s1); border: 1px solid var(--b1); color: var(--t2); padding: 7px 12px; font-family: var(--font-mono); font-size: 12px; border-radius: var(--radius-sm); cursor: pointer; min-width: 34px; transition: all .15s; }
+.news-pager button:hover:not(:disabled) { color: var(--t1); border-color: var(--ac); }
+.news-pager button.active { background: var(--ac); color: #fff; border-color: var(--ac); font-weight: 700; }
+body.light .news-pager button.active { color: #F4EFE5; }
+.news-pager button:disabled { opacity: .35; cursor: not-allowed; }
+.news-pager .news-pager-step { font-family: var(--font-body); font-weight: 600; padding: 7px 14px; }
+@media (min-width: 640px) { #page-news.active { padding: 0 18px 60px; } }
 .news-filters:empty { display: none; }
 .news-chip { background: var(--s1); border: 1px solid var(--b1); color: var(--t2); padding: 6px 14px; border-radius: 100px; font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
 .news-chip:hover { color: var(--t1); border-color: var(--ac); }
@@ -1431,7 +1438,7 @@ const I18N = {
   'אין נתונים מספקים':'Insufficient data','אין היסטוריית נתונים מוקלטת':'No recorded data history','כשל בקריאה אנליטית':'Analytics read failure',
   'מ:':'From:','עד:':'To:','חשב':'Calculate','מחפש...':'Searching...','לא נמצאו תוצאות':'No results found','שגיאה בחיפוש':'Search error',
   'חדשות':'News','חדשות מהעולם':'World News','נכסים שלי':'My Assets',
-  'הכל':'All','שווקים':'Markets','דוחות':'Earnings','טכנולוגיה':'Tech','כלכלה':'Economy',
+  'הכל':'All','שווקים':'Markets','דוחות':'Earnings','טכנולוגיה':'Tech','כלכלה':'Economy','הקודם':'Previous','הבא':'Next',
   'חדשות לא זמינות במצב קובץ מקומי':'News unavailable in local file mode',
   'מקורות החדשות חוסמים בקשות מ-file://':'News sources block requests from file://',
   'העלי את האתר ל-GitHub Pages או הריצי שרת מקומי':'Upload the site to GitHub Pages or run a local server',
@@ -1938,27 +1945,31 @@ async function renderCryptoPage() {
 let newsTab = 'world';
 let newsCategory = 'all';                 // selected world category
 let newsAssetFilter = null;               // selected symbol in 'mine' view
+let newsPage = 1;                         // 1-indexed
+const NEWS_PAGE_SIZE = 12;
 const newsCache = { world: null, mine: null, worldByCat: {}, _displayed: [] };
 let newsLastFetch = { world: 0, mine: 0 };
 
 // Yahoo Finance-style categories — each maps to Google News RSS queries
 const NEWS_CATEGORIES = [
   { key: 'all',      label: 'הכל',        icon: 'newspaper',     queries: null },     // null = use existing NEWS_WORLD_FEEDS
-  { key: 'markets',  label: 'שווקים',     icon: 'chart-line-up', queries: ['stock market today when:1d', 'S&P 500 when:1d', 'Dow Jones Nasdaq when:1d'] },
-  { key: 'crypto',   label: 'קריפטו',     icon: 'coins',         queries: ['cryptocurrency news when:1d', 'Bitcoin price when:1d', 'Ethereum crypto when:1d'] },
-  { key: 'earnings', label: 'דוחות',      icon: 'calendar-days', queries: ['earnings report when:2d', 'quarterly earnings when:2d', 'company earnings beat when:2d'] },
-  { key: 'tech',     label: 'טכנולוגיה',  icon: 'microchip',     queries: ['tech stocks when:1d', 'Apple Microsoft Google stock when:1d', 'semiconductor when:1d'] },
-  { key: 'economy',  label: 'כלכלה',      icon: 'bank',          queries: ['Federal Reserve when:2d', 'inflation rate when:2d', 'economy GDP when:2d'] },
-  { key: 'ai',       label: 'AI',         icon: 'brain-circuit', queries: ['artificial intelligence stocks when:2d', 'AI Nvidia when:1d', 'OpenAI when:2d'] },
+  { key: 'markets',  label: 'שווקים',     icon: 'chart-line-up', queries: ['stock market today when:5d', 'S&P 500 when:5d', 'Dow Jones Nasdaq when:5d'] },
+  { key: 'crypto',   label: 'קריפטו',     icon: 'coins',         queries: ['cryptocurrency news when:5d', 'Bitcoin price when:5d', 'Ethereum crypto when:5d'] },
+  { key: 'earnings', label: 'דוחות',      icon: 'calendar-days', queries: ['earnings report when:5d', 'quarterly earnings when:5d', 'company earnings beat when:5d'] },
+  { key: 'tech',     label: 'טכנולוגיה',  icon: 'microchip',     queries: ['tech stocks when:5d', 'Apple Microsoft Google stock when:5d', 'semiconductor when:5d'] },
+  { key: 'economy',  label: 'כלכלה',      icon: 'bank',          queries: ['Federal Reserve when:5d', 'inflation rate when:5d', 'economy GDP when:5d'] },
+  { key: 'ai',       label: 'AI',         icon: 'brain-circuit', queries: ['artificial intelligence stocks when:5d', 'AI Nvidia when:5d', 'OpenAI when:5d'] },
 ];
 
 window.setNewsCategory = (key) => {
   newsCategory = key;
+  newsPage = 1;
   renderNewsFilters();
   renderNews();
 };
 window.setNewsAssetFilter = (sym) => {
   newsAssetFilter = sym;
+  newsPage = 1;
   renderNewsFilters();
   renderNews();
 };
@@ -1997,14 +2008,15 @@ const NEWS_FETCHERS = [
 ];
 
 const NEWS_WORLD_FEEDS = [
-  { src: 'Google News · Markets', url: 'https://news.google.com/rss/search?q=' + encodeURIComponent('(stock market OR Wall Street OR global markets) when:1d') + '&hl=en-US&gl=US&ceid=US:en' },
-  { src: 'Google News · Business', url: 'https://news.google.com/rss/search?q=' + encodeURIComponent('(business OR economy OR interest rates) when:1d') + '&hl=en-US&gl=US&ceid=US:en' },
+  { src: 'Google News · Markets', url: 'https://news.google.com/rss/search?q=' + encodeURIComponent('(stock market OR Wall Street OR global markets) when:5d') + '&hl=en-US&gl=US&ceid=US:en' },
+  { src: 'Google News · Business', url: 'https://news.google.com/rss/search?q=' + encodeURIComponent('(business OR economy OR interest rates) when:5d') + '&hl=en-US&gl=US&ceid=US:en' },
   { src: 'CNBC Markets', url: 'https://www.cnbc.com/id/20409666/device/rss/rss.html' },
   { src: 'MarketWatch', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories' },
 ];
 
 window.setNewsTab = (t) => {
   newsTab = t;
+  newsPage = 1;
   document.getElementById('newsTabWorld')?.classList.toggle('active', t === 'world');
   document.getElementById('newsTabMine')?.classList.toggle('active', t === 'mine');
   renderNews();
@@ -2222,8 +2234,8 @@ async function newsLoadMine() {
 
   const feeds = assets.map(asset => {
     const q = asset.kind === 'crypto'
-      ? `"${asset.name}" cryptocurrency when:7d`
-      : `("${asset.sym}" stock OR "${asset.name}") when:7d`;
+      ? `"${asset.name}" cryptocurrency when:5d`
+      : `("${asset.sym}" stock OR "${asset.name}") when:5d`;
     return {
       ...asset,
       url: `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`
@@ -2249,6 +2261,37 @@ async function newsLoadMine() {
   return [];
 }
 
+function buildNewsPager(page, totalPages) {
+  if (totalPages <= 1) return '';
+  const isRtl = document.documentElement.dir !== 'ltr';
+  const labelPrev = isRtl ? 'הקודם' : 'Previous';
+  const labelNext = isRtl ? 'הבא' : 'Next';
+  // window of pages around current (max 7 visible) with ellipses
+  const pages = [];
+  const push = p => pages.push(p);
+  const lo = Math.max(2, page - 2), hi = Math.min(totalPages - 1, page + 2);
+  push(1);
+  if (lo > 2) push('…');
+  for (let p = lo; p <= hi; p++) push(p);
+  if (hi < totalPages - 1) push('…');
+  if (totalPages > 1) push(totalPages);
+  const btns = pages.map(p => p === '…'
+    ? `<span style="color:var(--t3);padding:0 4px">…</span>`
+    : `<button class="${p === page ? 'active' : ''}" onclick="goNewsPage(${p})">${p}</button>`
+  ).join('');
+  return `<div class="news-pager">
+    <button class="news-pager-step" onclick="goNewsPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>${labelPrev}</button>
+    ${btns}
+    <button class="news-pager-step" onclick="goNewsPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>${labelNext}</button>
+  </div>`;
+}
+window.goNewsPage = (p) => {
+  newsPage = Math.max(1, p);
+  renderNews();
+  document.getElementById('app')?.scrollTo?.({ top: 0, behavior: 'smooth' });
+  window.scrollTo?.({ top: 0, behavior: 'smooth' });
+};
+
 async function renderNews() {
   const el = document.getElementById('newsContent');
   if (!el) return;
@@ -2261,6 +2304,13 @@ async function renderNews() {
   el.innerHTML = '<div class="news-list">' + Array(6).fill('<div class="news-skel"></div>').join('') + '</div>';
   try {
     let items = newsTab === 'world' ? await newsLoadWorld(newsCategory) : await newsLoadMine();
+    // hard cap: only items from the last 5 days
+    const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
+    const cutoff = Date.now() - FIVE_DAYS_MS;
+    items = items.filter(it => {
+      const d = new Date(it.pubDate).getTime();
+      return !isNaN(d) && d >= cutoff;
+    });
     if (newsTab === 'mine' && newsAssetFilter) {
       items = items.filter(it => it.tagSym === newsAssetFilter);
     }
@@ -2273,8 +2323,14 @@ async function renderNews() {
       return;
     }
 
-    newsCache._displayed = items;
-    el.innerHTML = '<div class="news-list">' + items.map((item, index) => {
+    // pagination: cap items per page
+    const total = items.length;
+    const totalPages = Math.max(1, Math.ceil(total / NEWS_PAGE_SIZE));
+    if (newsPage > totalPages) newsPage = totalPages;
+    const start = (newsPage - 1) * NEWS_PAGE_SIZE;
+    const pageItems = items.slice(start, start + NEWS_PAGE_SIZE);
+    newsCache._displayed = pageItems;
+    el.innerHTML = '<div class="news-list">' + pageItems.map((item, index) => {
       const sym = item.tagSym
         ? `<span class="news-item-sym"><i class="fi fi-tr-bolt" style="font-size:10px"></i>${newsEscape(item.tagSym)}</span>`
         : '';
@@ -2287,7 +2343,7 @@ async function renderNews() {
         ${item.desc ? `<div class="news-item-desc">${newsEscape(item.desc)}</div>` : ''}
         ${sym}
       </div>`;
-    }).join('') + '</div>';
+    }).join('') + '</div>' + buildNewsPager(newsPage, totalPages);
   } catch (error) {
     console.error('[News] Render failed:', error);
     el.innerHTML = '<div class="news-empty">שגיאה בטעינת חדשות.<br>בדקי חיבור לאינטרנט ונסי שוב.</div>';
