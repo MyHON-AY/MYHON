@@ -133,9 +133,33 @@ body.light .ni.active { background: transparent; font-weight: 700; }
 .ni-ico { font-size: 18px; }
 .ni-lbl { font-size: 12px; font-weight: 600; letter-spacing: 0.2px; }
 
+/* ── FLOATING EDIT FAB (mobile only) ── */
+.fab-edit { display: flex; position: fixed; bottom: calc(var(--nav) + var(--safe) + 18px); left: 18px; z-index: 110; width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--ac); color: #fff; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 22px rgba(59,107,255,.42), 0 2px 6px rgba(0,0,0,.25); transition: transform .15s, box-shadow .15s; }
+body.light .fab-edit { background: var(--ac); color: #fff; box-shadow: 0 8px 22px rgba(184,145,80,.42), 0 2px 6px rgba(0,0,0,.18); }
+.fab-edit:hover { transform: translateY(-2px) scale(1.04); }
+.fab-edit:active { transform: scale(.95); }
+.fab-edit i { font-size: 22px; line-height: 1; }
+
+/* Desktop top nav — separate row ABOVE the ticker tape; hidden on mobile */
+.nav-top { display: none; position: sticky; top: 0; z-index: 61; background: var(--s1); border-bottom: 1px solid var(--b2); height: 46px; padding: 0 18px; gap: 4px; align-items: stretch; }
+.nav-top button { background: none; border: none; cursor: pointer; height: 100%; padding: 0 18px; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--t2); letter-spacing: .2px; transition: color .12s; position: relative; }
+.nav-top button:hover { color: var(--t1); }
+.nav-top button.active { color: var(--t1); font-weight: 700; }
+.nav-top button.active::after { content: ''; position: absolute; left: 18px; right: 18px; bottom: -1px; height: 2px; background: var(--ac); }
+@media (min-width: 640px) {
+  body { max-width: 100%; }
+  .fab-edit { display: none; }
+  .nav { display: none !important; }
+  #app { padding-bottom: 24px; }
+  .nav-top { display: flex; position: sticky; top: 0; }
+  /* sticky chain inside #app: nav at top:0, ticker right below it at top:46px */
+  #tickerBar { display: flex !important; position: sticky !important; top: 46px !important; z-index: 59; }
+}
+
 /* ── TOP TICKER TAPE (dash only) ── */
 #tickerBar { position: sticky; top: 0; z-index: 60; display: none; height: 28px; background: var(--s1); border-bottom: 1px solid var(--b2); overflow: visible; }
 #tickerBar.show { display: flex; }
+@media (min-width: 640px) { #tickerBar { display: flex !important; } }
 .tk-mkt { position: relative; flex-shrink: 0; height: 100%; display: flex; align-items: center; gap: 5px; padding: 0 10px; cursor: pointer; background: var(--s2); border-left: 1px solid var(--b2); color: var(--t1); font-size: 11px; font-weight: 600; user-select: none; white-space: nowrap; }
 .tk-mkt i { font-size: 11px; color: var(--t3); transition: transform .15s; }
 .tk-mkt.open i { transform: rotate(180deg); }
@@ -201,6 +225,14 @@ body.light .total::before { display:none; }
 /* ── STAT GRID ── */
 .stat-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; width: 100%; }
 .stat { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; overflow: hidden; }
+/* Desktop: hero card with KPI on one side and 4 sub-stats in a 2x2 grid on the other */
+@media (min-width: 640px) {
+  .hero-block { background: var(--s1); border: 1px solid var(--b2); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 14px;
+                display: grid; grid-template-columns: 2fr 3fr; gap: 28px; align-items: center; }
+  .hero-block .total { background: transparent; border: none; padding: 0; margin: 0; border-radius: 0; text-align: right; }
+  .hero-block .stat-g { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; margin: 0; }
+  .hero-block .stat { background: var(--s2); border: 1px solid var(--b1); border-radius: var(--radius-sm); padding: 14px 16px; }
+}
 .s-lbl { font-size: 12px; color: var(--t3); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .s-val { font-family: var(--font-mono); font-size: 23px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .s-sub { font-family: 'Geist', 'Rubik', sans-serif; font-size: 13px; font-weight: 300; color: var(--t2); margin-top: 4px; }
@@ -412,6 +444,16 @@ body.light .lock-logo { border-radius: 50%; background: var(--ac); color: var(--
 .lock-btn-ico { font-size: 28px; }
 .lock-btn-lbl { font-size: 12px; font-weight: 700; color: var(--t1); }
 .lock-err { font-size: 11px; color: var(--rd); text-align: center; min-height: 16px; font-family: var(--font-mono); }
+.gbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 300px; background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 100px; padding: 13px 24px; cursor: pointer; transition: transform .12s, box-shadow .15s; }
+.gbtn:hover { box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.gbtn:active { transform: scale(.985); }
+.gbtn-lbl { font-family: 'Geist', 'Rubik', sans-serif; font-size: 14.5px; font-weight: 500; color: #1f1f1f; }
+.gbtn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.lock-div { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 300px; color: var(--t3); font-size: 12px; }
+.lock-div::before, .lock-div::after { content: ''; flex: 1; height: 1px; background: var(--b2); }
+.lock-swap { font-size: 13.5px; color: var(--ac); cursor: pointer; background: none; border: none; font-family: var(--font-body); font-weight: 600; padding: 4px; }
+.lock-swap:hover { text-decoration: underline; }
+.lock-note { font-size: 11px; color: var(--t3); text-align: center; max-width: 270px; line-height: 1.5; display: none; }
 .lock-skip { font-size: 11px; color: var(--t3); cursor: pointer; background: none; border: none; font-family: var(--font-body); text-decoration: underline; }
 
 /* ── SERVICE ── */
@@ -580,29 +622,85 @@ if (isWebView) {
   });
 }
 
+let authMode = 'login';
+window._authMode = 'login';
+window.setAuthMode = (m) => {
+  authMode = m;
+  window._authMode = m;
+  const lbl = document.getElementById('gLbl');
+  if (lbl) lbl.textContent = m === 'signup' ? 'הרשמה עם Google' : 'היכנס באמצעות Google';
+  const note = document.getElementById('lockNote');
+  if (note) note.style.display = m === 'signup' ? 'block' : 'none';
+  const swap = document.getElementById('swapBtn');
+  if (swap) swap.textContent = m === 'signup' ? 'כבר יש לך חשבון? התחברות' : 'יצירת חשבון';
+  document.getElementById('lockErr').textContent = '';
+};
+
+const localPortfolio = () => {
+  try {
+    return {
+      crypto: JSON.parse(localStorage.getItem('pc') || '[]'),
+      stocks: JSON.parse(localStorage.getItem('ps') || '[]'),
+    };
+  } catch(_) { return { crypto: [], stocks: [] }; }
+};
+
+async function finishAuth(user, mode) {
+  const uid = user.uid;
+  const err = document.getElementById('lockErr');
+  const prevOwner = localStorage.getItem('data_owner_uid');
+  // a DIFFERENT Google user on this device — never inherit the previous user's local data
+  if (prevOwner && prevOwner !== uid) {
+    localStorage.removeItem('pc'); localStorage.removeItem('ps');
+  }
+  localStorage.setItem('data_owner_uid', uid);
+  DOC = doc(db, 'portfolio', uid);
+
+  let exists = false;
+  try { exists = (await getDoc(DOC)).exists(); } catch(_) {}
+
+  if (!exists) {
+    // real account creation: profile doc + starting portfolio
+    // (migrates local-mode work if this device belonged to no one / to this user)
+    const seed = (prevOwner && prevOwner !== uid) ? { crypto: [], stocks: [] } : localPortfolio();
+    try {
+      await setDoc(DOC, {
+        profile: { email: user.email || '', name: user.displayName || '', photo: user.photoURL || '' },
+        createdAt: Date.now(),
+        crypto: seed.crypto,
+        stocks: seed.stocks,
+      }, { merge: true });
+    } catch(_) {}
+    if (mode === 'login' && err) err.textContent = 'לא נמצא חשבון קיים — נפתח לך חשבון חדש';
+  } else if (mode === 'signup' && err) {
+    err.textContent = 'כבר קיים חשבון לכתובת הזו — חוברת אליו';
+  }
+
+  localStorage.setItem('google_auth_ts', Date.now().toString());
+  localStorage.setItem('google_auth_email', user.email);
+  localStorage.setItem('google_auth_uid', uid);
+}
+
 window.doGoogleLogin = async () => {
   const err = document.getElementById('lockErr');
-  const lbl = document.getElementById('authLbl');
-  const ico = document.getElementById('authIco');
+  const lbl = document.getElementById('gLbl');
+  const mode = authMode;
   err.textContent = '';
-  ico.textContent = '⏳'; lbl.textContent = 'מתחבר לגוגל...';
+  lbl.textContent = mode === 'signup' ? 'נרשם...' : 'מתחבר לגוגל...';
   try {
     const provider = new GoogleAuthProvider();
     if (isIOS) {
       localStorage.setItem('google_pending_redirect', '1');
+      localStorage.setItem('google_auth_mode', mode);
       await signInWithRedirect(auth, provider);
     } else {
       const result = await signInWithPopup(auth, provider);
-      const uid = result.user.uid;
-      DOC = doc(db, 'portfolio', uid);
-      localStorage.setItem('google_auth_ts', Date.now().toString());
-      localStorage.setItem('google_auth_email', result.user.email);
-      localStorage.setItem('google_auth_uid', uid);
-      ico.textContent = '✅'; lbl.textContent = 'מחובר!';
-      setTimeout(() => window.proceedToApp(), 500);
+      await finishAuth(result.user, mode);
+      lbl.textContent = mode === 'signup' ? 'נרשמת!' : 'מחובר!';
+      setTimeout(() => window.proceedToApp(), 600);
     }
   } catch(e) {
-    ico.textContent = '🔑'; lbl.textContent = 'התחבר עם Google';
+    lbl.textContent = mode === 'signup' ? 'הרשמה עם Google' : 'היכנס באמצעות Google';
     err.textContent = e.code === 'auth/popup-closed-by-user' ? 'החלון נסגר — נסה שוב' : 'שגיאה: ' + e.message;
   }
 };
@@ -620,9 +718,15 @@ window.checkAuthAndShow = () => {
   const bioBtn = document.getElementById('bioBtn');
   const authTitle = document.getElementById('authTitle');
   if (googleValid && bioValid) { window.proceedToApp(); return; }
+  const lockDiv = document.getElementById('lockDiv');
+  const swapBtn = document.getElementById('swapBtn');
+  const lockNote = document.getElementById('lockNote');
   if (googleValid && !bioValid) {
     authTitle.textContent = 'אמת טביעת אצבע';
     googleBtn.style.display = 'none';
+    if (lockDiv) lockDiv.style.display = 'none';
+    if (swapBtn) swapBtn.style.display = 'none';
+    if (lockNote) lockNote.style.display = 'none';
     bioBtn.style.display = 'flex';
     document.getElementById('authIco').textContent = '👆';
     document.getElementById('authLbl').textContent = 'טביעת אצבע / זיהוי פנים';
@@ -630,6 +734,8 @@ window.checkAuthAndShow = () => {
   }
   authTitle.textContent = 'כניסה למערכת';
   googleBtn.style.display = 'flex';
+  if (lockDiv) lockDiv.style.display = 'flex';
+  if (swapBtn) swapBtn.style.display = '';
   bioBtn.style.display = 'none';
 };
 
@@ -687,13 +793,11 @@ document.dispatchEvent(new Event('firebaseReady'));
 
 if (localStorage.getItem('google_pending_redirect')) {
   localStorage.removeItem('google_pending_redirect');
-  getRedirectResult(auth).then(result => {
+  getRedirectResult(auth).then(async result => {
     if (result?.user) {
-      const uid = result.user.uid;
-      DOC = doc(db, 'portfolio', uid);
-      localStorage.setItem('google_auth_ts', Date.now().toString());
-      localStorage.setItem('google_auth_email', result.user.email);
-      localStorage.setItem('google_auth_uid', uid);
+      const mode = localStorage.getItem('google_auth_mode') || 'login';
+      localStorage.removeItem('google_auth_mode');
+      await finishAuth(result.user, mode);
       window.proceedToApp();
     } else {
       onAuthStateChanged(auth, () => window.checkAuthAndShow());
@@ -710,10 +814,13 @@ if (localStorage.getItem('google_pending_redirect')) {
   <div class="lock-logo" id="lockMark">V·</div>
   <div class="lock-title" id="lockTitleText">Vector</div>
   <div class="lock-sub" id="authTitle">כניסה מאובטחת לנתונים</div>
-  <button class="lock-btn" id="googleBtn" onclick="doGoogleLogin()" style="display:none">
-    <div class="lock-btn-ico"><i class="ph-thin ph-key ph-lg"></i></div>
-    <div class="lock-btn-lbl">התחבר באמצעות Google</div>
+  <button class="gbtn" id="googleBtn" onclick="doGoogleLogin()" style="display:none">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    <span class="gbtn-lbl" id="gLbl">היכנס באמצעות Google</span>
   </button>
+  <div class="lock-note" id="lockNote">ההרשמה פתוחה לכל חשבון Google — ייפתח לך תיק אישי חדש</div>
+  <div class="lock-div" id="lockDiv">או</div>
+  <button class="lock-swap" id="swapBtn" onclick="setAuthMode(window._authMode === 'signup' ? 'login' : 'signup')">יצירת חשבון</button>
   <button class="lock-btn" id="bioBtn" onclick="doBiometric()" style="display:none">
     <div class="lock-btn-ico" id="authIco"><i class="ph-thin ph-fingerprint ph-lg"></i></div>
     <div class="lock-btn-lbl" id="authLbl">זיהוי פנים / טביעת אצבע</div>
@@ -724,6 +831,12 @@ if (localStorage.getItem('google_pending_redirect')) {
 
 <div id="app" style="display:none">
 
+  <nav class="nav-top" id="navTop">
+    <button class="nit active" data-p="dash" onclick="goPage('dash',this)">דשבורד</button>
+    <button class="nit" data-p="stocks" onclick="goPage('stocks',this)">מניות</button>
+    <button class="nit" data-p="crypto" onclick="goPage('crypto',this)">קריפטו</button>
+    <button class="nit" data-p="insights" onclick="goPage('insights',this)">תובנות</button>
+  </nav>
   <div id="tickerBar" class="show">
     <div class="tk-mkt" id="tkMkt" onclick="tkToggleMenu(event)">
       <span id="tkMktLbl">ארה"ב</span><i class="ph ph-caret-down"></i>
@@ -737,19 +850,29 @@ if (localStorage.getItem('google_pending_redirect')) {
   </div>
 
   <div class="page active" id="page-dash">
-    <div class="total">
-      <div class="t-lbl">שווי שוק כולל — נכסים</div>
-      <div class="t-val"><span id="grandNumWrap"><span id="grandNum">---</span></span><span class="sym">ILS</span></div>
-      <div class="t-meta">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="badge up" id="chgBadge">---</div>
-          <div class="t-sub" id="usdVal">≈ $---</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <div class="t-sub" style="font-size:13px;text-transform:uppercase;letter-spacing:1px;">רווח יומי</div>
-          <div class="t-pnl" id="chgAbs" style="color:var(--gr)">---</div>
+    <div class="hero-block">
+      <div class="total">
+        <div class="t-lbl">שווי שוק כולל — נכסים</div>
+        <div class="t-val"><span id="grandNumWrap"><span id="grandNum">---</span></span><span class="sym">ILS</span></div>
+        <div class="t-meta">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="badge up" id="chgBadge">---</div>
+            <div class="t-sub" id="usdVal">≈ $---</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="t-sub" style="font-size:13px;text-transform:uppercase;letter-spacing:1px;">רווח יומי</div>
+            <div class="t-pnl" id="chgAbs" style="color:var(--gr)">---</div>
+          </div>
         </div>
       </div>
+
+
+    <div class="stat-g">
+      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-coins ph-sm"></i> קריפטו</div><div class="s-val" id="cKpi" style="color:var(--ac)">₪---</div><div class="s-sub" id="cPct">---%</div><div class="bar"><div class="bar-f" id="cBar" style="background:var(--ac)"></div></div></div>
+      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-chart-line-up ph-sm"></i> מניות</div><div class="s-val" id="sKpi" style="color:var(--bl)">₪---</div><div class="s-sub" id="sPct">---%</div><div class="bar"><div class="bar-f" id="sBar" style="background:var(--bl)"></div></div></div>
+      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-currency-dollar ph-sm"></i> שער דולר</div><div class="s-val" id="fxKpi" style="color:var(--gd)">₪---</div><div class="s-sub">USD/ILS רציף</div></div>
+      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-trophy ph-sm"></i> ביצועים מובילים</div><div class="s-val" id="bestKpi" style="font-size:13px;color:var(--gr)">---</div><div class="s-sub">ב-24 השעות האחרונות</div></div>
+    </div>
     </div>
 
     <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius);padding:14px;margin-bottom:12px;">
@@ -772,13 +895,6 @@ if (localStorage.getItem('google_pending_redirect')) {
       <div id="dashPeriodResult" style="display:none;margin-top:10px;">
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;" id="dashPeriodGrid"></div>
       </div>
-    </div>
-
-    <div class="stat-g">
-      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-coins ph-sm"></i> קריפטו</div><div class="s-val" id="cKpi" style="color:var(--ac)">₪---</div><div class="s-sub" id="cPct">---%</div><div class="bar"><div class="bar-f" id="cBar" style="background:var(--ac)"></div></div></div>
-      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-chart-line-up ph-sm"></i> מניות</div><div class="s-val" id="sKpi" style="color:var(--bl)">₪---</div><div class="s-sub" id="sPct">---%</div><div class="bar"><div class="bar-f" id="sBar" style="background:var(--bl)"></div></div></div>
-      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-currency-dollar ph-sm"></i> שער דולר</div><div class="s-val" id="fxKpi" style="color:var(--gd)">₪---</div><div class="s-sub">USD/ILS רציף</div></div>
-      <div class="stat"><div class="s-lbl"><i class="ph-thin ph-trophy ph-sm"></i> ביצועים מובילים</div><div class="s-val" id="bestKpi" style="font-size:13px;color:var(--gr)">---</div><div class="s-sub">ב-24 השעות האחרונות</div></div>
     </div>
 
     <div class="sec"><div class="sec-t"><i></i>מניות וניירות ערך</div><button class="add-b" onclick="openEditor('stock')"><i class="ph-thin ph-plus-circle ph-sm"></i> הוסף נכס</button></div>
@@ -858,6 +974,8 @@ if (localStorage.getItem('google_pending_redirect')) {
   <button class="ni" data-p="crypto" onclick="goPage('crypto',this)"><span class="ni-ico"><i class="ph-thin ph-coins"></i></span><span class="ni-lbl">קריפטו</span></button>
   <button class="ni" data-p="insights" onclick="goPage('insights',this)"><span class="ni-ico"><i class="ph-thin ph-lightbulb"></i></span><span class="ni-lbl">תובנות</span></button>
 </nav>
+
+<button class="fab-edit" onclick="openEditor()" title="ערוך תיק" aria-label="ערוך תיק"><i class="ph-thin ph-pencil-simple"></i></button>
 
 <div class="ov" id="detOv" onclick="if(event.target===this)closeDet()">
   <div class="modal"><div class="drag"></div><button class="mclose" onclick="closeDet()"><i class="ph-thin ph-x ph-sm"></i></button><div id="detContent"></div></div>
@@ -1264,6 +1382,12 @@ const I18N = {
   'כניסה מאובטחת לנתונים':'Secure data access','התחבר באמצעות Google':'Sign in with Google','התחבר עם Google':'Sign in with Google',
   'זיהוי פנים / טביעת אצבע':'Face ID / Fingerprint','טביעת אצבע / זיהוי פנים':'Fingerprint / Face ID',
   'כניסה ללא אימות (מצב מקומי)':'Continue without auth (local mode)','כניסה למערכת':'Sign In','אומת':'Verified',
+  'כבר יש לך חשבון? התחברות':'Already have an account? Sign in','יצירת חשבון':'Create account',
+  'היכנס באמצעות Google':'Sign in with Google',
+  'התחברות':'Sign in','הרשמה עם Google':'Sign up with Google','הרשמה':'Sign up','נרשם...':'Signing up...','נרשמת!':'Signed up!',
+  'ההרשמה פתוחה לכל חשבון Google — ייפתח לך תיק אישי חדש':'Open to any Google account — a new personal portfolio will be created',
+  'לא נמצא חשבון קיים — נפתח לך חשבון חדש':'No existing account found — a new one was created for you',
+  'כבר קיים חשבון לכתובת הזו — חוברת אליו':'An account already exists for this address — you were signed in',
   'ממתין לאימות...':'Waiting for authentication...','מתחבר לגוגל...':'Connecting to Google...',
   'האימות נכשל — נסה שוב':'Authentication failed — try again','מכשיר חדש — לחץ שוב':'New device — tap again',
   'אמת טביעת אצבע':'Verify fingerprint','שגיאה':'Error',
@@ -1448,9 +1572,11 @@ function tkStart() {
 // ═══════════════════════════════════════════
 function goPage(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ni, .nit').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   if (btn) btn.classList.add('active');
+  // mirror to all nav rows (mobile bottom + desktop inline) so both stay in sync regardless of which was clicked
+  document.querySelectorAll(`[data-p="${id}"]`).forEach(b => b.classList.add('active'));
   S.curPage = id;
   document.getElementById('tickerBar').classList.toggle('show', id === 'dash');
   document.getElementById('app').scrollTop = 0;
