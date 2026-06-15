@@ -195,8 +195,9 @@ body.light .tk-opt.sel { color: #F4EFE5; }
 .ac-item:last-child { border-bottom: none; }
 .ac-item:hover, .ac-item.hov { background: var(--s3); }
 .ac-thumb { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
-.ac-sym { font-family: 'Newsreader', serif; font-style: italic; font-size: 15px; color: var(--t1); min-width: 56px; }
+.ac-sym { font-family: 'Newsreader', serif; font-style: italic; font-size: 15px; color: var(--t1); min-width: 70px; }
 .ac-name { font-family: 'Manrope', 'Rubik', sans-serif; font-weight: 500; font-size: 12px; color: var(--t2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.ac-exch { font-family: var(--font-mono); font-size: 9.5px; font-weight: 700; color: var(--gd); background: var(--s2); border: 1px solid var(--b1); padding: 2px 7px; border-radius: 100px; letter-spacing: .5px; white-space: nowrap; flex-shrink: 0; }
 .ac-load { padding: 9px 12px; font-size: 11px; color: var(--t3); font-family: 'Geist', 'Rubik', sans-serif; }
 
 /* Asset names — Manrope Medium (Latin) / Rubik (Hebrew) */
@@ -304,6 +305,36 @@ body.light .news-chip.active { color: #F4EFE5; }
   .fx-conv { top: auto; bottom: calc(var(--nav) + var(--safe) + 90px); left: 50%; transform: translateX(-50%); width: calc(100vw - 32px); max-width: 320px; }
   .fx-conv.open { animation: fxConvInM .22s ease-out; }
   @keyframes fxConvInM { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+}
+
+/* ── MOBILE COMPACT CARD (single-row watchlist style) ── */
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; gap: 8px; }
+  .card { padding: 12px 14px; display: grid; grid-template-columns: 40px 1fr 80px auto; grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; align-items: center;
+          direction: ltr; }   /* force LTR so layout is identical in Hebrew and English */
+  /* hide bits that don't fit a row layout */
+  .card .cg { display: none; }
+  .card .cedit { display: none; }
+  .card .tag { display: none; }
+  .card .pl { display: none; }
+  .card .vq { display: none; }
+  .card .pn { display: none; }
+  .card .cf { display: none; }
+  /* col 1: icon (always leftmost) */
+  .card .ct { display: contents; }
+  .card .cid { grid-column: 1 / span 2; grid-row: 1 / span 2; display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 10px; min-width: 0; direction: ltr; }
+  .card .ico { width: 40px; height: 40px; font-size: 18px; grid-row: 1 / span 2; grid-column: 1; }
+  .card .cid > div:last-child { flex-direction: column !important; align-items: flex-start !important; gap: 0 !important; min-width: 0; text-align: left; }
+  .card .tic { font-size: 16px; line-height: 1.1; }
+  .card .nam { font-size: 11px; line-height: 1.2; max-width: 100%; text-align: left; }
+  /* col 3: spark in the middle */
+  .card .spk { grid-column: 3; grid-row: 1 / span 2; height: 36px; width: 80px; margin: 0; align-self: center; }
+  /* col 4: value (top right) + % change (bottom right) */
+  .card .cb { display: contents; }
+  .card .cb > div:last-child { grid-column: 4; grid-row: 1; text-align: right; }
+  .card .vv { font-size: 15px; font-weight: 700; text-align: right; }
+  .card .pb { grid-column: 4; grid-row: 2; align-items: flex-end; text-align: right; }
+  .card .pp { font-size: 11px; text-align: right; }
 }
 
 /* ── PAGES ── */
@@ -512,6 +543,11 @@ body.light .rb.active { background: #fff; color: var(--ac); box-shadow: 0 1px 6p
 .tabb.active { background: var(--s3); border-color: var(--b2); color: var(--t1); }
 .alist { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; }
 .erow { display: flex; align-items: center; gap: 8px; background: var(--s3); border: 1px solid var(--b1); border-radius: var(--radius-sm); padding: 8px 12px; }
+.emove { display: flex; flex-direction: column; gap: 1px; }
+.emove-btn { background: var(--s2); border: 1px solid var(--b1); color: var(--t2); width: 24px; height: 16px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; transition: all .12s; padding: 0; }
+.emove-btn:hover:not(:disabled) { color: var(--t1); border-color: var(--ac); background: var(--s1); }
+.emove-btn:disabled { opacity: .25; cursor: not-allowed; }
+.emove-btn i { font-size: 9px; line-height: 1; }
 .erow-ico { font-size: 16px; }
 .erow-info { flex: 1; min-width: 0; }
 .erow-sym { font-family: 'Newsreader', serif; font-style: italic; font-size: 14px; font-weight: 400; }
@@ -1297,21 +1333,63 @@ async function getCrypto() {
 
 const FINNHUB_KEY = 'd6kptghr01qmopd1m2o0d6kptghr01qmopd1m2og';
 
+async function fetchYahooQuote(sym) {
+  // Yahoo's chart endpoint also returns meta with regular market price, prev close, day high/low —
+  // works for ANY symbol on ANY global exchange (POLI.TA, ASML.AS, 7203.T, etc.)
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=5d`;
+  const proxies = [
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
+  ];
+  for (const px of proxies) {
+    try {
+      const r = await fetch(px(url), { signal: AbortSignal.timeout(9000) });
+      if (!r.ok) continue;
+      const text = await r.text();
+      let body = text;
+      try { const j = JSON.parse(text); if (j && typeof j.contents === 'string') body = j.contents; } catch (_) {}
+      let json;
+      try { json = JSON.parse(body); } catch (_) { continue; }
+      const result = json?.chart?.result?.[0];
+      const meta = result?.meta;
+      if (!meta) continue;
+      const price = meta.regularMarketPrice;
+      const prev  = meta.chartPreviousClose ?? meta.previousClose;
+      const high  = meta.regularMarketDayHigh;
+      const low   = meta.regularMarketDayLow;
+      if (price && prev) {
+        return { price, prevClose: prev, high: high ?? price, low: low ?? price, currency: meta.currency || 'USD' };
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
 async function getStocks() {
   await Promise.all(S.stocks.map(async s => {
-    try {
-      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${s.sym}&token=${FINNHUB_KEY}`, {signal: AbortSignal.timeout(9000)});
-      if (!r.ok) return;
-      const d = await r.json();
-      if (d.c && d.pc) {
-        S.sp[s.sym] = {
-          price: d.c, prevClose: d.pc,
-          change: ((d.c - d.pc) / d.pc) * 100,
-          changeAmt: d.c - d.pc,
-          high: d.h, low: d.l
-        };
-      }
-    } catch(_) {}
+    // Try Yahoo first — supports every global exchange Finnhub doesn't cover on free tier
+    let q = await fetchYahooQuote(s.sym);
+    // Fallback to Finnhub for US tickers only (no dot in symbol)
+    if (!q && !s.sym.includes('.')) {
+      try {
+        const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${s.sym}&token=${FINNHUB_KEY}`, { signal: AbortSignal.timeout(9000) });
+        if (r.ok) {
+          const d = await r.json();
+          if (d.c && d.pc) q = { price: d.c, prevClose: d.pc, high: d.h, low: d.l, currency: 'USD' };
+        }
+      } catch (_) {}
+    }
+    if (q) {
+      S.sp[s.sym] = {
+        price: q.price, prevClose: q.prevClose,
+        change: ((q.price - q.prevClose) / q.prevClose) * 100,
+        changeAmt: q.price - q.prevClose,
+        high: q.high, low: q.low,
+        currency: q.currency,
+      };
+    }
   }));
 }
 
@@ -1548,6 +1626,7 @@ const I18N = {
   'מ:':'From:','עד:':'To:','חשב':'Calculate','מחפש...':'Searching...','לא נמצאו תוצאות':'No results found','שגיאה בחיפוש':'Search error',
   'חדשות':'News','חדשות מהעולם':'World News','נכסים שלי':'My Assets',
   'הכל':'All','שווקים':'Markets','דוחות':'Earnings','טכנולוגיה':'Tech','כלכלה':'Economy','הקודם':'Previous','הבא':'Next',
+  'הזז למעלה':'Move up','הזז למטה':'Move down',
   'מחשבון מטבעות':'Currency Converter','מחשבון מט"ח':'Currency Converter','טוען שערים...':'Loading rates...','סגור':'Close',
   'תפריט':'Menu','רענן נתונים':'Refresh data',
   'חדשות לא זמינות במצב קובץ מקומי':'News unavailable in local file mode',
@@ -2125,23 +2204,28 @@ async function renderStocksPage(customFrom, customTo) {
   }
 
   el.innerHTML = S.stocks.map((s, i) => {
-    const val = sv(s); const p = S.sp[s.sym]; const chg = changes[i];
+    const val = sv(s);
+    const p   = S.sp[s.sym];
+    const chg = changes[i];
     const pnl = chg != null ? val * chg / 100 / (1 + chg / 100) : null;
-    const up  = (chg || 0) >= 0;
-    return `<div class="arow" onclick="openDet('${s.sym}','stock')">
-      <div class="ar-ico">${s.icon}</div>
-      <div class="ar-main">
-        <div class="ar-sym">${s.sym}</div>
-        <div class="ar-name">${s.name}</div>
-        <div class="ar-price">${p?.price?'$'+p.price.toFixed(2):'טוען...'}${p?.high?' · H: $'+p.high.toFixed(2):''}</div>
-      </div>
-      <div class="ar-right">
-        <div class="ar-val">${fILS(val)}</div>
-        <div class="ar-pct" style="color:${up?'var(--gr)':'var(--rd)'}">${chg!=null?fPct(chg):'טוען...'}</div>
-        <div class="ar-pnl" style="color:${up?'var(--gr)':'var(--rd)'}">${pnl!=null?(up?'+':'')+fILS(pnl):'---'}</div>
-      </div>
-    </div>`;
+    const pu  = p?.price;
+    const html = cardHTML({
+      sym: s.sym, name: s.name, icon: s.icon, color: s.color, type: 'stock',
+      value: val,
+      qtyLabel: 'NASDAQ / Equity',
+      priceStr: pu ? `$<span>${pu.toFixed(2)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
+      priceUSD: pu,
+      change: chg,
+      pnlDay: pnl
+    });
+    return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${i * 50}ms"`);
   }).join('');
+  // wrap in grid container for desktop multi-column layout
+  el.innerHTML = '<div class="grid">' + el.innerHTML + '</div>';
+  S.stocks.forEach((s, i) => {
+    const chg = changes[i];
+    setTimeout(() => drawSpark(`spk_${s.sym}`, s.sym, false, (chg || 0) >= 0), 40);
+  });
 
   if (S.sbC) { S.sbC.destroy(); S.sbC = null; }
   document.getElementById('sBarTitle').textContent = `שינוי תקופתי (${pnlTitle}) — מניות`;
@@ -2166,24 +2250,25 @@ async function renderCryptoPage() {
   const changes = await Promise.all(S.crypto.map(a => getCryptoPeriodChange(a, S.cPeriod)));
   const sorted  = S.crypto.map((a, i) => ({a, chg: changes[i]})).sort((x, y) => cv(y.a) - cv(x.a));
 
-  el.innerHTML  = sorted.map(({a, chg}) => {
-    const val = cv(a), p = S.cp[a.id], pu = p?.usd;
+  el.innerHTML = sorted.map(({a, chg}, i) => {
+    const val = cv(a);
+    const p   = S.cp[a.id];
+    const pu  = p?.usd;
+    const pi  = pu ? pu * S.fx : null;
     const pnl = chg != null && val ? val * chg / 100 / (1 + chg / 100) : null;
-    const up  = (chg || 0) >= 0;
-    return `<div class="arow" onclick="openDet('${a.sym}','crypto')">
-      <div class="ar-ico">${a.icon}</div>
-      <div class="ar-main">
-        <div class="ar-sym">${a.sym}</div>
-        <div class="ar-name">${a.name}</div>
-        <div class="ar-price">${pu?'$'+fP(pu):''} · החזקה: ${fNum(a.qty)}</div>
-      </div>
-      <div class="ar-right">
-        <div class="ar-val">${fILS(val)}</div>
-        <div class="ar-pct" style="color:${up?'var(--gr)':'var(--rd)'}">${chg!=null?fPct(chg):'טוען...'}</div>
-        <div class="ar-pnl" style="color:${up?'var(--gr)':'var(--rd)'}">${pnl!=null?(up?'+':'')+fILS(pnl):'---'}</div>
-      </div>
-    </div>`;
+    const html = cardHTML({
+      sym: a.sym, name: a.name, icon: a.icon, color: a.color, type: 'crypto',
+      value: val,
+      qtyLabel: fNum(a.qty) + ' ' + a.sym,
+      priceStr: pi ? `₪<span>${fP(pi)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
+      priceUSD: pu,
+      change: chg,
+      pnlDay: pnl
+    });
+    return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${i * 50}ms"`);
   }).join('');
+  el.innerHTML = '<div class="grid">' + el.innerHTML + '</div>';
+  sorted.forEach(({a, chg}) => setTimeout(() => drawSpark(`spk_${a.sym}`, a.sym, true, (chg || 0) >= 0), 40));
 
   if (S.cbC) { S.cbC.destroy(); S.cbC = null; }
   const uc = upColor(), dc = downColor(), ax = axisColor();
@@ -3223,8 +3308,8 @@ function drawSChart(prices, labels, sym) {
 // ═══════════════════════════════════════════
 // EDITOR
 // ═══════════════════════════════════════════
-let edTab = 'crypto';
-function openEditor(tab) { edTab = tab || 'crypto'; document.getElementById('edOv').classList.add('open'); document.body.style.overflow = 'hidden'; renderEd(); }
+let edTab = 'stock';
+function openEditor(tab) { edTab = tab || 'stock'; document.getElementById('edOv').classList.add('open'); document.body.style.overflow = 'hidden'; renderEd(); }
 function closeEd() { document.getElementById('edOv').classList.remove('open'); document.body.style.overflow = ''; }
 
 function renderEd() {
@@ -3233,8 +3318,8 @@ function renderEd() {
     <div class="ed-t">ניהול פוזיציות ונכסים</div>
     <div class="ed-s">שינוי כמויות, הוספה או גריעה מתיק הנכסים</div>
     <div class="tabr">
-      <button class="tabb ${iC?'active':''}" onclick="edTab='crypto';renderEd()"><i class="ph-thin ph-coins ph-sm"></i> קריפטו (${S.crypto.length})</button>
       <button class="tabb ${!iC?'active':''}" onclick="edTab='stock';renderEd()"><i class="ph-thin ph-chart-line-up ph-sm"></i> מניות (${S.stocks.length})</button>
+      <button class="tabb ${iC?'active':''}" onclick="edTab='crypto';renderEd()"><i class="ph-thin ph-coins ph-sm"></i> קריפטו (${S.crypto.length})</button>
     </div>
     <div class="alist">
       ${list.map((a,i) => `
@@ -3244,6 +3329,10 @@ function renderEd() {
           ${iC
             ? `<input class="einput" type="number" value="${a.qty}" step="any" oninput="S.crypto[${i}].qty=parseFloat(this.value)||0;markEdit()">`
             : `<input class="einput" type="number" value="${getShares(a)}" step="any" placeholder="מניות" oninput="S.stocks[${i}].shares=parseFloat(this.value)||0;markEdit()">`}
+          <div class="emove">
+            <button class="emove-btn" title="הזז למעלה" onclick="moveAsset(${i},-1)" ${i === 0 ? 'disabled' : ''}><i class="fi fi-tr-angle-up"></i></button>
+            <button class="emove-btn" title="הזז למטה" onclick="moveAsset(${i},1)" ${i === list.length - 1 ? 'disabled' : ''}><i class="fi fi-tr-angle-down"></i></button>
+          </div>
           <button class="edel" onclick="delA(${i})"><i class="ph-thin ph-trash" style="font-size:13px"></i></button>
         </div>`).join('')}
     </div>
@@ -3264,6 +3353,15 @@ function renderEd() {
 }
 
 function delA(i) { if (edTab==='crypto') S.crypto.splice(i,1); else S.stocks.splice(i,1); saveLS(); renderEd(); }
+function moveAsset(i, dir) {
+  const list = edTab === 'crypto' ? S.crypto : S.stocks;
+  const j = i + dir;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  saveLS();
+  markEdit();
+  renderEd();
+}
 
 // ── Symbol autocomplete: Finnhub (stocks) / CoinGecko (crypto), 5 results ──
 let edPickedId = null;
@@ -3295,18 +3393,35 @@ async function acFetch(q) {
     } else {
       const r = await fetch(`https://finnhub.io/api/v1/search?q=${encodeURIComponent(q)}&token=${FINNHUB_KEY}`, { signal: AbortSignal.timeout(8000) });
       const d = await r.json();
+      // Map Finnhub symbol suffix → human exchange tag. No suffix = US (NYSE / NASDAQ).
+      const EXCHANGES = {
+        'TA':'TLV', 'L':'LSE', 'LON':'LSE', 'DE':'XETRA', 'F':'FRA', 'PA':'PAR', 'MI':'MIL', 'AS':'AMS',
+        'BR':'BRU', 'MC':'MAD', 'LS':'LIS', 'SW':'SIX', 'VI':'VIE', 'ST':'STO', 'CO':'CPH', 'OL':'OSE',
+        'HE':'HEX', 'WA':'WSE', 'PR':'PRA', 'BU':'BUD', 'AT':'ATH', 'IS':'IST', 'JO':'JSE', 'CA':'CAI',
+        'SA':'SAO', 'MX':'MEX', 'BA':'BUE', 'SN':'SCL', 'TO':'TSX', 'V':'TSXV', 'NE':'NEO', 'CN':'CSE',
+        'AX':'ASX', 'NZ':'NZX', 'T':'TYO', 'HK':'HKEX', 'SS':'SSE', 'SZ':'SZSE', 'KS':'KRX', 'KQ':'KOSDAQ',
+        'TW':'TWSE', 'BK':'SET', 'SI':'SGX', 'KL':'BURSA', 'JK':'IDX', 'NS':'NSE', 'BO':'BSE', 'SR':'TADAWUL',
+        'AE':'DFM', 'QA':'QE',
+      };
       items = (d.result || [])
-        .filter(x => x.type === 'Common Stock' || x.type === 'ETP' || x.type === 'ADR' || !x.type)
-        .filter(x => !x.symbol.includes('.') || x.symbol.endsWith('.B') || x.symbol.endsWith('.A'))
-        .slice(0, 5)
-        .map(x => ({ sym: x.symbol, name: x.description, id: null, thumb: null }));
+        .filter(x => x.symbol && x.description)
+        .filter(x => !/[\^=]/.test(x.symbol))         // skip indices like ^GSPC, futures like CL=F
+        .slice(0, 8)                                  // a few more — global exchanges share results
+        .map(x => {
+          const dot = x.symbol.lastIndexOf('.');
+          const suffix = dot >= 0 ? x.symbol.slice(dot + 1) : '';
+          const exch = suffix ? (EXCHANGES[suffix.toUpperCase()] || suffix.toUpperCase()) : 'US';
+          return { sym: x.symbol, name: x.description, id: null, thumb: null, exch };
+        });
     }
     if (seq !== acSeq || !box) return;            // a newer search already ran
     if (!items.length) { box.innerHTML = '<div class="ac-load">לא נמצאו תוצאות</div>'; return; }
     box.innerHTML = items.map(it =>
       `<div class="ac-item" onmousedown="event.preventDefault();edPick('${it.sym}',\`${(it.name || '').replace(/`/g, '')}\`,${it.id ? `'${it.id}'` : 'null'})">` +
       (it.thumb ? `<img class="ac-thumb" src="${it.thumb}" alt="">` : '') +
-      `<span class="ac-sym">${it.sym}</span><span class="ac-name">${it.name || ''}</span></div>`
+      `<span class="ac-sym">${it.sym}</span><span class="ac-name">${it.name || ''}</span>` +
+      (it.exch ? `<span class="ac-exch">${it.exch}</span>` : '') +
+      `</div>`
     ).join('');
   } catch (_) {
     if (seq === acSeq && box) box.innerHTML = '<div class="ac-load">שגיאה בחיפוש</div>';
