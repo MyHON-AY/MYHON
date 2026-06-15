@@ -101,7 +101,7 @@ body::before {
 }
 body.light::before { opacity: 0; }
 
-#app { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1; padding-bottom: calc(var(--nav) + var(--safe) + 16px); -webkit-overflow-scrolling: touch; }
+#app { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1; padding-bottom: calc(var(--nav) + var(--safe) + 32px); -webkit-overflow-scrolling: touch; }
 #app::-webkit-scrollbar { width: 4px; }
 #app::-webkit-scrollbar-thumb { background: var(--s3); border-radius: var(--radius); }
 
@@ -128,7 +128,22 @@ body.light .logo-m { border-radius: 50%; background: var(--ac); color: var(--bg)
 #ts .clock-sep { color: var(--b2); opacity: .8; }
 
 /* ── BOTTOM NAV ── */
-.nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: var(--s1); border-top: 1px solid var(--b2); display: flex; padding-bottom: var(--safe); height: calc(var(--nav) + var(--safe)); }
+.nav {
+  position: fixed;
+  bottom: calc(var(--safe) + 12px);
+  left: 12px; right: 12px;
+  z-index: 100;
+  background: color-mix(in srgb, var(--s1) 92%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--b2);
+  border-radius: 22px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.25);
+  display: flex;
+  height: var(--nav);
+  padding: 0;
+  overflow: hidden;
+}
 .ni { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; border: none; background: none; color: var(--t3); font-family: var(--font-body); padding: 6px 2px; border-top: 2px solid transparent; transition: all 0.15s; }
 .ni.active { color: var(--t1); border-top-color: var(--ac); background: var(--s2); }
 body.light .ni.active { background: transparent; font-weight: 700; }
@@ -307,10 +322,52 @@ body.light .news-chip.active { color: #F4EFE5; }
   @keyframes fxConvInM { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 }
 
+.crypto-only-hint { display: inline-flex; align-items: center; gap: 4px; margin-inline-start: 8px; padding: 2px 8px; border-radius: 100px; background: color-mix(in srgb, var(--ac) 15%, transparent); border: 1px solid color-mix(in srgb, var(--ac) 35%, transparent); color: var(--ac); font-family: var(--font-body); font-size: 10px; font-weight: 600; letter-spacing: .3px; vertical-align: middle; }
+.crypto-only-hint i { font-size: 9px; }
+
+.lots-history { margin-top: 14px; }
+.lots-history-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.lots-history-title h3 { font-family: 'Newsreader', 'Rubik', serif; font-style: italic; font-size: 18px; font-weight: 400; color: var(--t1); }
+.lots-history-title .avg-pill { font-family: var(--font-mono); font-size: 11px; color: var(--gd); font-weight: 600; padding: 4px 10px; background: color-mix(in srgb, var(--gd) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gd) 25%, transparent); border-radius: 100px; }
+.lot-card { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; padding: 12px 14px; background: var(--s3); border: 1px solid var(--b1); border-radius: var(--radius-sm); margin-bottom: 8px; }
+.lot-card-cell { display: flex; flex-direction: column; gap: 2px; }
+.lot-card-cell .lc-l { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.lot-card-cell .lc-v { font-family: var(--font-mono); font-size: 13px; color: var(--t1); font-weight: 700; }
+.lot-card-cell .lc-v.up { color: var(--gr); }
+.lot-card-cell .lc-v.dn { color: var(--rd); }
+@media (max-width: 640px) { .lot-card { grid-template-columns: 1fr 1fr; gap: 8px; } }
+
+.lots-panel { margin-top: 6px; padding: 10px; background: var(--s3); border: 1px solid var(--b1); border-radius: var(--radius-sm); }
+.lots-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-family: var(--font-body); font-size: 11px; color: var(--t2); text-transform: uppercase; letter-spacing: .5px; }
+.lots-panel-avg { font-family: var(--font-mono); font-size: 11px; color: var(--gd); font-weight: 600; }
+.lot-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: center; margin-bottom: 6px; }
+.lot-row input { background: var(--s1); border: 1px solid var(--b1); border-radius: 4px; padding: 6px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--t1); width: 100%; }
+.lot-row input:focus { border-color: var(--ac); outline: none; }
+.lot-row .lot-del { width: 26px; height: 26px; background: transparent; border: 1px solid var(--b1); border-radius: 4px; color: var(--t3); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.lot-row .lot-del:hover { color: var(--rd); border-color: var(--rd); }
+.lot-add { width: 100%; background: transparent; border: 1px dashed var(--b2); border-radius: 4px; padding: 6px; color: var(--ac); font-family: var(--font-body); font-size: 11px; cursor: pointer; margin-top: 2px; }
+.lot-add:hover { background: color-mix(in srgb, var(--ac) 8%, transparent); }
+.lots-toggle { background: transparent; border: 1px solid var(--b1); border-radius: 4px; padding: 4px 8px; color: var(--t2); font-family: var(--font-body); font-size: 10px; cursor: pointer; }
+.lots-toggle:hover { color: var(--t1); border-color: var(--ac); }
+
+/* ── PRICE TICK FLASH (from brand book p.13) ── */
+@keyframes tickFlashUp {
+  0%   { background: transparent; }
+  20%  { background: color-mix(in oklab, var(--gr) 28%, transparent); }
+  100% { background: transparent; }
+}
+@keyframes tickFlashDown {
+  0%   { background: transparent; }
+  20%  { background: color-mix(in oklab, var(--rd) 28%, transparent); }
+  100% { background: transparent; }
+}
+#grandNumWrap.flash-up   { animation: tickFlashUp   700ms ease-out; border-radius: 8px; padding: 2px 8px; margin: -2px -8px; }
+#grandNumWrap.flash-down { animation: tickFlashDown 700ms ease-out; border-radius: 8px; padding: 2px 8px; margin: -2px -8px; }
+
 /* ── MOBILE COMPACT CARD (single-row watchlist style) ── */
 @media (max-width: 640px) {
   .grid { grid-template-columns: 1fr; gap: 8px; }
-  .card { padding: 12px 14px; display: grid; grid-template-columns: 40px 1fr 80px auto; grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; align-items: center;
+  .card { padding: 12px 14px; display: grid; grid-template-columns: 40px 1fr 140px 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 2px; align-items: center;
           direction: ltr; }   /* force LTR so layout is identical in Hebrew and English */
   /* hide bits that don't fit a row layout */
   .card .cg { display: none; }
@@ -328,7 +385,8 @@ body.light .news-chip.active { color: #F4EFE5; }
   .card .tic { font-size: 16px; line-height: 1.1; }
   .card .nam { font-size: 11px; line-height: 1.2; max-width: 100%; text-align: left; }
   /* col 3: spark in the middle */
-  .card .spk { grid-column: 3; grid-row: 1 / span 2; height: 36px; width: 80px; margin: 0; align-self: center; }
+  .card .spk { grid-column: 3; grid-row: 1 / span 2; height: 48px; width: 140px; margin: 0; align-self: center; justify-self: center; display: flex; align-items: center; justify-content: center; }
+  .card .spk svg { width: 100% !important; height: 100% !important; display: block; }
   /* col 4: value (top right) + % change (bottom right) */
   .card .cb { display: contents; }
   .card .cb > div:last-child { grid-column: 4; grid-row: 1; text-align: right; }
@@ -475,16 +533,16 @@ body.light .ir-v.ac { color: var(--t1); }
 .dist-p { font-family: var(--font-mono); font-size: 12px; color: var(--t3); width: 38px; text-align: left; }
 
 /* ── MODALS ── */
-.ov { position: fixed; inset: 0; background: rgba(10,15,31,0.82); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.ov { position: fixed; inset: 0; background: rgba(10,15,31,0.82); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: stretch; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 body.light .ov { background: rgba(11,30,63,0.42); }
 @media(min-width: 640px) { .ov { align-items: center; justify-content: center; } }
 .ov.open { opacity: 1; pointer-events: all; }
-.modal { background: var(--s2); border-top: 1px solid var(--b2); width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px 20px; transform: translateY(30px); transition: transform .25s cubic-bezier(.55,.2,.2,1); }
-@media(min-width: 640px) { .modal { border: 1px solid var(--b2); border-radius: var(--radius); width: min(720px, 94vw); max-height: 85vh; transform: scale(0.97) translateY(10px); } }
+.modal { background: var(--s2); border-top: 1px solid var(--b2); width: 100%; height: 100%; max-height: 100vh; overflow-y: auto; padding: 24px 20px 40px; transform: translateY(30px); transition: transform .25s cubic-bezier(.55,.2,.2,1); }
+@media(min-width: 640px) { .modal { border: 1px solid var(--b2); border-radius: var(--radius); width: min(720px, 94vw); max-height: 85vh; height: auto; transform: scale(0.97) translateY(10px); padding: 24px 20px; } }
 .ov.open .modal { transform: none; }
-.drag { width: 34px; height: 3px; background: var(--b2); border-radius: 2px; margin: 0 auto 20px; }
-@media(min-width:640px) { .drag { display: none; } }
-.mclose { position: absolute; top: 16px; left: 16px; width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--s3); border: 1px solid var(--b1); color: var(--t2); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.drag { display: none; }
+.mclose { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 16px; width: 36px; height: 36px; border-radius: 50%; background: var(--s3); border: 1px solid var(--b1); color: var(--t2); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
+@media(min-width: 640px) { .mclose { top: 16px; width: 28px; height: 28px; border-radius: var(--radius-sm); } }
 .mclose:hover { color: var(--rd); background: var(--b1); }
 
 .mh { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
@@ -688,18 +746,6 @@ td { font-size: 11px; color: var(--t1); border-bottom: 1px solid var(--b1); }
     <button class="nit" data-p="news" onclick="goPage('news',this)">חדשות</button>
     <button class="nit" data-p="insights" onclick="goPage('insights',this)">תובנות</button>
   </nav>
-<div id="tickerBar" class="show">
-    <div class="tk-mkt" id="tkMkt" onclick="tkToggleMenu(event)">
-      <span id="tkMktLbl">ארה"ב</span><i class="ph ph-caret-down"></i>
-      <div class="tk-menu" id="tkMenu">
-        <div class="tk-opt sel" data-mkt="us" onclick="tkSetMarket('us',event)"><span>שוק אמריקאי</span><i class="ph ph-check tk-chk"></i></div>
-        <div class="tk-opt" data-mkt="il" onclick="tkSetMarket('il',event)"><span>שוק ישראלי</span><i class="ph ph-check tk-chk"></i></div>
-        <div class="tk-opt" data-mkt="cr" onclick="tkSetMarket('cr',event)"><span>קריפטו</span><i class="ph ph-check tk-chk"></i></div>
-      </div>
-    </div>
-    <div class="tk-strip"><div class="tk-track" id="tkTrack"></div></div>
-  </div>
-
 <div class="topbar">
   <div class="logo">
     <div class="logo-m" id="logoMark">V·</div>
@@ -995,6 +1041,18 @@ if (localStorage.getItem('google_pending_redirect')) {
   <button class="lock-skip" onclick="skipAuth()">כניסה ללא אימות (מצב מקומי)</button>
 </div>
 
+<div id="tickerBar" class="show">
+    <div class="tk-mkt" id="tkMkt" onclick="tkToggleMenu(event)">
+      <span id="tkMktLbl">ארה"ב</span><i class="ph ph-caret-down"></i>
+      <div class="tk-menu" id="tkMenu">
+        <div class="tk-opt sel" data-mkt="us" onclick="tkSetMarket('us',event)"><span>שוק אמריקאי</span><i class="ph ph-check tk-chk"></i></div>
+        <div class="tk-opt" data-mkt="il" onclick="tkSetMarket('il',event)"><span>שוק ישראלי</span><i class="ph ph-check tk-chk"></i></div>
+        <div class="tk-opt" data-mkt="cr" onclick="tkSetMarket('cr',event)"><span>קריפטו</span><i class="ph ph-check tk-chk"></i></div>
+      </div>
+    </div>
+    <div class="tk-strip"><div class="tk-track" id="tkTrack"></div></div>
+  </div>
+
 <div id="app" style="display:none">
 
   <div class="page active" id="page-dash">
@@ -1008,7 +1066,7 @@ if (localStorage.getItem('google_pending_redirect')) {
             <div class="t-sub" id="usdVal">≈ $---</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;">
-            <div class="t-sub" style="font-size:13px;text-transform:uppercase;letter-spacing:1px;">רווח יומי</div>
+            <div class="t-sub" style="font-size:13px;text-transform:uppercase;letter-spacing:1px;">רווח <span id="dailyDate"></span><span id="cryptoOnlyHint"></span></div>
             <div class="t-pnl" id="chgAbs" style="color:var(--gr)">---</div>
           </div>
         </div>
@@ -1329,6 +1387,19 @@ async function getCrypto() {
       } catch(_) {}
     }));
   }
+  // Also pull today's open (UTC midnight) per symbol — enables calendar-day P&L instead of 24h rolling.
+  // Binance klines interval=1d; the most recent kline has [openTime, open, ...].
+  await Promise.all(S.crypto.map(async a => {
+    const bs = BN[a.sym]; if (!bs || !S.cp[a.id]) return;
+    try {
+      const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${bs}&interval=1d&limit=1`);
+      const kl = await r.json();
+      if (Array.isArray(kl) && kl[0]) {
+        S.cp[a.id].openToday = parseFloat(kl[0][1]);
+        S.cp[a.id].openTodayTs = kl[0][0];
+      }
+    } catch(_) {}
+  }));
 }
 
 const FINNHUB_KEY = 'd6kptghr01qmopd1m2o0d6kptghr01qmopd1m2og';
@@ -1356,7 +1427,19 @@ async function fetchYahooQuote(sym) {
       const meta = result?.meta;
       if (!meta) continue;
       const price = meta.regularMarketPrice;
-      const prev  = meta.chartPreviousClose ?? meta.previousClose;
+      // Don't trust meta.previousClose — it can be stale or wrong for fast-moving stocks.
+      // Instead, pull the previous trading day's close DIRECTLY from the candle data we just fetched.
+      const t = result?.timestamp || [];
+      const c = result?.indicators?.quote?.[0]?.close || [];
+      let prev = null;
+      if (c.length >= 2) {
+        // walk backward from the last candle to find the previous valid close (skip the current day if it equals 'price')
+        for (let i = c.length - 2; i >= 0; i--) {
+          if (c[i] != null && c[i] > 0) { prev = c[i]; break; }
+        }
+      }
+      // last-resort fallbacks
+      if (prev == null) prev = meta.previousClose ?? meta.chartPreviousClose;
       const high  = meta.regularMarketDayHigh;
       const low   = meta.regularMarketDayLow;
       if (price && prev) {
@@ -1527,10 +1610,75 @@ async function getCryptoPeriodChange(a, period) {
 // ═══════════════════════════════════════════
 // CALCULATIONS
 // ═══════════════════════════════════════════
-const getShares = s => s.shares || s.qty || 0;
-const cv = (a) => { const p = S.cp[a.id]; return p ? p.usd * S.fx * a.qty : 0; };
+const getShares = s => {
+  // New schema: s.lots = [{qty, price, date}]
+  if (Array.isArray(s.lots) && s.lots.length) {
+    return s.lots.reduce((a, l) => a + (parseFloat(l.qty) || 0), 0);
+  }
+  return s.shares || s.qty || 0;
+};
+// Average entry price (weighted by qty across lots). Returns null if no lots.
+const avgEntry = a => {
+  if (!Array.isArray(a.lots) || !a.lots.length) return null;
+  let totalQty = 0, totalCost = 0;
+  a.lots.forEach(l => {
+    const q = parseFloat(l.qty) || 0;
+    const p = parseFloat(l.price) || 0;
+    totalQty += q;
+    totalCost += q * p;
+  });
+  return totalQty > 0 ? totalCost / totalQty : null;
+};
+// Total qty for crypto (handles lots[] or legacy qty field).
+const cQty = a => {
+  if (Array.isArray(a.lots) && a.lots.length) {
+    return a.lots.reduce((acc, l) => acc + (parseFloat(l.qty) || 0), 0);
+  }
+  return a.qty || 0;
+};
+// Cumulative P&L since entry (₪) — stocks: (price − avgEntry) × shares × FX
+const stockTotalPnl = s => {
+  const p = S.sp[s.sym];
+  if (!p?.price) return null;
+  const entry = avgEntry(s);
+  const sh = getShares(s);
+  if (entry == null || !sh) return null;
+  return (p.price - entry) * sh * S.fx;
+};
+// Cumulative P&L for crypto since entry
+const cryptoTotalPnl = a => {
+  const p = S.cp[a.id];
+  if (!p?.usd) return null;
+  const entry = avgEntry(a);
+  const qty = cQty(a);
+  if (entry == null || !qty) return null;
+  return (p.usd - entry) * qty * S.fx;
+};
+
+const cv = (a) => { const p = S.cp[a.id]; return p ? p.usd * S.fx * cQty(a) : 0; };
 const cc = (a) => S.cp[a.id]?.ch24 ?? null;
-const cpnl = (a) => { const v = cv(a), ch = cc(a); if (!v || ch == null) return null; return v * ch / 100 / (1 + ch / 100); };
+// Hebrew calendar-day label like "15 ביוני" — used to title daily P&L widgets
+const HE_MONTHS = ['בינואר','בפברואר','במרץ','באפריל','במאי','ביוני','ביולי','באוגוסט','בספטמבר','באוקטובר','בנובמבר','בדצמבר'];
+function todayHeLabel() {
+  const d = new Date();
+  return `${d.getDate()} ${HE_MONTHS[d.getMonth()]}`;
+}
+function todayEnLabel() {
+  return new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+}
+
+const cpnl = (a) => {
+  // Calendar-day P&L: (currentPrice − today's open at UTC midnight) × qty × fx
+  const p = S.cp[a.id];
+  if (!p?.usd || !cQty(a)) return null;
+  if (p.openToday) {
+    return (p.usd - p.openToday) * cQty(a) * S.fx;
+  }
+  // fallback: derive from 24h rolling change (less accurate but better than nothing)
+  const v = cv(a), ch = p.ch24;
+  if (!v || ch == null) return null;
+  return v * ch / 100 / (1 + ch / 100);
+};
 
 const sv = (s) => {
   const p = S.sp[s.sym];
@@ -1595,6 +1743,11 @@ const I18N = {
   'ב-24 השעות האחרונות':'In the last 24 hours','USD/ILS רציף':'USD/ILS live',
   // sections + buttons
   'הוספת נכס חדש':'Add New Asset','הוסף נכס':'Add Asset','הוסף מניה':'Add Stock','הוסף מטבע':'Add Coin',
+  'P&L מצטבר':'Cumulative P&L','מחיר כניסה $':'Entry Price $','קניות':'Buys','קנייה':'Buy',
+  'מחיר כניסה ממוצע':'Avg Entry Price','היסטוריית קניות':'Buy History','תאריך':'Date','כמות':'Qty','מחיר $':'Price $','רווח/הפסד':'P&L',
+  'הוסף קנייה':'Add buy','ממוצע':'avg','מחיר ממוצע':'Avg price','מנוהל דרך קניות':'Managed via buys',
+  '(אופציונלי)':'(optional)','ניהול קניות':'Manage buys','מחק קנייה':'Delete buy',
+
   'התפלגות תיק הנכסים':'Portfolio Allocation','פילוח קטגוריות':'Category Breakdown','תשואה תקופתית — מניות':'Periodic Return — Stocks',
   'שינוי 24 שעות — קריפטו':'24h Change — Crypto','היסטוריית ביצועים ו-P&L':'Performance History & P&L',
   'התראות מערכת וחריגות אלוקציה':'System alerts & allocation anomalies','הנכסים המניבים ביותר היום':'Top performing assets today',
@@ -1627,6 +1780,7 @@ const I18N = {
   'חדשות':'News','חדשות מהעולם':'World News','נכסים שלי':'My Assets',
   'הכל':'All','שווקים':'Markets','דוחות':'Earnings','טכנולוגיה':'Tech','כלכלה':'Economy','הקודם':'Previous','הבא':'Next',
   'הזז למעלה':'Move up','הזז למטה':'Move down',
+  'קריפטו בלבד':'Crypto only',
   'מחשבון מטבעות':'Currency Converter','מחשבון מט"ח':'Currency Converter','טוען שערים...':'Loading rates...','סגור':'Close',
   'תפריט':'Menu','רענן נתונים':'Refresh data',
   'חדשות לא זמינות במצב קובץ מקומי':'News unavailable in local file mode',
@@ -1975,7 +2129,7 @@ function goPage(id, btn) {
   // mirror to all nav rows (mobile bottom + desktop inline) so both stay in sync regardless of which was clicked
   document.querySelectorAll(`[data-p="${id}"]`).forEach(b => b.classList.add('active'));
   S.curPage = id;
-  document.getElementById('tickerBar').classList.toggle('show', id === 'dash');
+  document.getElementById('tickerBar').classList.add('show');   // always-on across pages
   document.getElementById('app').scrollTop = 0;
   if (id === 'stocks')   renderStocksPage();
   if (id === 'crypto')   renderCryptoPage();
@@ -1987,7 +2141,15 @@ function goPage(id, btn) {
 // SPARKLINES
 // ═══════════════════════════════════════════
 async function drawSpark(cid, key, isCrypto, isUp) {
-  const container = document.getElementById(cid); if (!container) return;
+  // Find ALL elements with this ID — the same symbol can appear on dashboard AND on stocks/crypto page simultaneously.
+  // getElementById returns only the first; we need to draw on all of them.
+  const containers = Array.from(document.querySelectorAll(`[id="${cid}"]`));
+  if (!containers.length) return;
+  // If any container hasn't laid out yet, wait one frame and retry
+  if (containers.some(c => !c.clientWidth)) {
+    await new Promise(r => requestAnimationFrame(r));
+    if (containers.some(c => !c.clientWidth)) await new Promise(r => setTimeout(r, 50));
+  }
   let prices = S.sparks[key];
   if (!prices) {
     if (isCrypto) {
@@ -2003,16 +2165,29 @@ async function drawSpark(cid, key, isCrypto, isUp) {
       // fallback if Yahoo blocks: still better than 3 points — interpolate intraday-style noise
       if (!prices?.length) {
         const p = S.sp[key];
-        if (p) {
-          const open = p.prevClose, close = p.price;
-          const n = 24;
-          prices = Array.from({ length: n }, (_, i) => {
-            const t = i / (n - 1);
-            const trend = open + (close - open) * t;
-            const noise = (Math.sin(i * 1.3) + Math.sin(i * 0.7)) * Math.abs(close - open) * 0.18;
-            return trend + noise;
-          });
-        }
+        // Use known prices if we have them, otherwise a generic sine wave so the area isn't empty
+        const open  = p?.prevClose ?? 100;
+        const close = p?.price ?? (open * (isUp ? 1.05 : 0.95));
+        // Hash the symbol to a stable per-symbol seed so each ticker gets a unique fake curve
+        let seed = 0;
+        for (let i = 0; i < key.length; i++) seed = (seed * 31 + key.charCodeAt(i)) | 0;
+        const f1 = 0.7 + (Math.abs(seed) % 100) / 100;             // 0.7–1.7
+        const f2 = 1.2 + (Math.abs(seed >> 5) % 130) / 100;        // 1.2–2.5
+        const f3 = 0.3 + (Math.abs(seed >> 11) % 80) / 100;        // 0.3–1.1
+        const phase = (Math.abs(seed >> 3) % 628) / 100;           // 0–2π
+        const amp = 0.22 + (Math.abs(seed >> 7) % 18) / 100;       // 0.22–0.4
+        const n = 30;
+        prices = Array.from({ length: n }, (_, i) => {
+          const t = i / (n - 1);
+          const trend = open + (close - open) * t;
+          const wave = (
+            Math.sin(i * f1 + phase) +
+            Math.sin(i * f2 + phase * 1.7) * 0.6 +
+            Math.sin(i * f3 + phase * 0.4) * 0.4
+          );
+          const noise = wave * Math.max(Math.abs(close - open), open * 0.02) * amp;
+          return trend + noise;
+        });
       }
     }
     if (prices?.length) S.sparks[key] = prices;
@@ -2020,7 +2195,8 @@ async function drawSpark(cid, key, isCrypto, isUp) {
   if (!prices?.length || prices.length < 2) return;
 
   const col = isUp ? upColor() : downColor();
-  const W = container.clientWidth || container.offsetWidth || 320, H = 56;
+  // Use the first container to measure width; same logical width for all instances.
+  const W = containers[0].clientWidth || containers[0].offsetWidth || 320, H = 56;
   const mn = Math.min(...prices), mx = Math.max(...prices);
   const range = mx - mn || 1;
   const pts = prices.map((p, i) => {
@@ -2040,31 +2216,32 @@ async function drawSpark(cid, key, isCrypto, isUp) {
   // fill area path (closed, no animation — just fades in with the line)
   const fillD = d + ` L ${W},${H} L 0,${H} Z`;
 
-  container.innerHTML = `
+  const svgHTML = `
     <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">
       <defs>
-        <linearGradient id="sg_${cid}" x1="0" x2="0" y1="0" y2="1">
+        <linearGradient id="sg_${cid}_${Math.random().toString(36).slice(2,8)}" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stop-color="${col}" stop-opacity="0.18"/>
           <stop offset="1" stop-color="${col}" stop-opacity="0"/>
         </linearGradient>
       </defs>
-      <path d="${fillD}" fill="url(#sg_${cid})" opacity="0" style="animation:fadeIn 2.4s cubic-bezier(.55,.2,.2,1) .3s forwards"/>
+      <path d="${fillD}" fill="${col}" fill-opacity="0.12" opacity="0" style="animation:fadeIn 2.4s cubic-bezier(.55,.2,.2,1) .3s forwards"/>
       <path class="spark-path" d="${d}" fill="none"
         stroke="${col}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
         style="--dash-len:${len}; stroke-dasharray:${len}; stroke-dashoffset:${len};
                animation: drawLine 2.4s cubic-bezier(.55,.2,.2,1) forwards;"/>
     </svg>`;
+  // draw on EVERY container with this id (dashboard + page may both have it)
+  containers.forEach(c => { c.innerHTML = svgHTML; });
 }
 
 // ═══════════════════════════════════════════
 // DASHBOARD
 // ═══════════════════════════════════════════
 function cardHTML(o) {
-  const {sym, name, icon, color, type, value, qtyLabel, priceStr, priceUSD, change, pnlDay} = o;
+  const {sym, name, icon, color, type, value, qtyLabel, priceStr, priceUSD, change, pnlDay, pnlTotal} = o;
   const up = change >= 0, pup = (pnlDay || 0) >= 0;
   return `<div class="card" onclick="openDet('${sym}','${type}')">
     <div class="cg" style="background:${color}"></div>
-    <button class="cedit" onclick="event.stopPropagation();openEditor('${type}')" title="ערוך"><i class="ph-thin ph-pencil-simple" style="font-size:12px"></i></button>
     <div class="ct" style="direction:ltr;">
       <div class="cid"><div class="ico">${icon}</div>
         <div style="display:flex;align-items:baseline;gap:6px;min-width:0;"><div class="tic">${sym}</div><div class="nam">${name}</div></div>
@@ -2077,6 +2254,7 @@ function cardHTML(o) {
         <div class="pp ${up?'up':'dn'}" style="color:${up?'var(--gr)':'var(--rd)'}">${up?'▲':'▼'} ${change!=null?Math.abs(change).toFixed(2):'--'}%</div>
         ${pnlDay!=null?`<div class="pn ${pup?'up':'dn'}" style="color:${pup?'var(--gr)':'var(--rd)'}">${pup?'+':''}${fILS(pnlDay)}</div>`:''}
         <div class="pl">P&L יומי</div>
+        ${pnlTotal!=null?`<div class="pn ${pnlTotal>=0?'up':'dn'}" style="color:${pnlTotal>=0?'var(--gr)':'var(--rd)'};margin-top:6px;border-top:1px solid var(--b1);padding-top:4px">${pnlTotal>=0?'+':''}${fILS(pnlTotal)}</div><div class="pl">P&L מצטבר</div>`:''}
       </div>
       <div style="text-align:left;"><div class="vv">${fILS(value)}</div><div class="vq">${qtyLabel}</div></div>
     </div>
@@ -2092,7 +2270,7 @@ function renderDashCrypto() {
   const sorted = [...S.crypto].sort((a, b) => cv(b) - cv(a));
   g.innerHTML = sorted.map((a, idx) => {
     const p = S.cp[a.id], pu = p?.usd, pi = pu ? pu * S.fx : null;
-    const html = cardHTML({sym:a.sym,name:a.name,icon:a.icon,color:a.color,type:'crypto',value:cv(a),qtyLabel:fNum(a.qty)+' '+a.sym,priceStr:pi?`₪<span>${fP(pi)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:cc(a),pnlDay:cpnl(a)});
+    const html = cardHTML({sym:a.sym,name:a.name,icon:a.icon,color:a.color,type:'crypto',value:cv(a),qtyLabel:fNum(cQty(a))+' '+a.sym,priceStr:pi?`₪<span>${fP(pi)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:cc(a),pnlDay:cpnl(a),pnlTotal:cryptoTotalPnl(a)});
     return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${idx * 50}ms"`);
   }).join('');
   sorted.forEach(a => setTimeout(() => drawSpark(`spk_${a.sym}`, a.sym, true, cc(a) >= 0), 40));
@@ -2102,7 +2280,7 @@ function renderDashStocks() {
   const g = document.getElementById('dSGrid');
   g.innerHTML = S.stocks.map((s, idx) => {
     const p = S.sp[s.sym], pu = p?.price;
-    const html = cardHTML({sym:s.sym,name:s.name,icon:s.icon,color:s.color,type:'stock',value:sv(s),qtyLabel:'NASDAQ / Equity',priceStr:pu?`$<span>${pu.toFixed(2)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:p?.change??null,pnlDay:spnl(s)});
+    const html = cardHTML({sym:s.sym,name:s.name,icon:s.icon,color:s.color,type:'stock',value:sv(s),qtyLabel:'NASDAQ / Equity',priceStr:pu?`$<span>${pu.toFixed(2)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:p?.change??null,pnlDay:spnl(s),pnlTotal:stockTotalPnl(s)});
     return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${idx * 50}ms"`);
   }).join('');
   S.stocks.forEach(s => { const p = S.sp[s.sym]; if (p) setTimeout(() => drawSpark(`spk_${s.sym}`, s.sym, false, p.change >= 0), 40); });
@@ -2118,6 +2296,14 @@ function updateKPIs() {
   if (symEl) symEl.textContent = S.currency === 'usd' ? 'USD' : 'ILS';
   const grandEl = document.getElementById('grandNum');
   if (grandEl) grandEl.textContent = grandVal > 0 ? grandVal.toLocaleString(S.currency === 'usd' ? 'en' : 'he-IL', {maximumFractionDigits:0}) : '---';
+  // Price-tick flash on the grand total — fires whenever the total moved between updates.
+  const wrap = document.getElementById('grandNumWrap');
+  if (wrap && prevTotal > 0 && g > 0 && g !== prevTotal) {
+    const up = g > prevTotal;
+    wrap.classList.remove('flash-up', 'flash-down');
+    void wrap.offsetWidth; // force reflow so animation restarts cleanly
+    wrap.classList.add(up ? 'flash-up' : 'flash-down');
+  }
   document.getElementById('cKpi').textContent = fILS(c);
   document.getElementById('sKpi').textContent = fILS(st);
   const cp = g ? c / g * 100 : 0, sp = g ? st / g * 100 : 0;
@@ -2141,6 +2327,15 @@ function updateKPIs() {
   const pnlEl = document.getElementById('chgAbs');
   pnlEl.textContent = (pnlTotal >= 0 ? '+' : '') + fILS(pnlTotal);
   pnlEl.style.color = pnlTotal >= 0 ? 'var(--gr)' : 'var(--rd)';
+  // When all stocks contribute 0 to today's P&L (US market closed), show a small hint
+  const stocksPnl = S.stocks.reduce((a, s) => a + (spnl(s) || 0), 0);
+  const cryptoOnly = S.stocks.length > 0 && stocksPnl === 0 && S.crypto.length > 0;
+  const hintEl = document.getElementById('cryptoOnlyHint');
+  if (hintEl) {
+    hintEl.innerHTML = cryptoOnly
+      ? `<span class="crypto-only-hint"><i class="fi fi-tr-coins"></i>קריפטו בלבד</span>`
+      : '';
+  }
   let best = null, bc = -Infinity;
   S.crypto.forEach(a => { const ch = cc(a); if (ch != null && ch > bc) { bc = ch; best = a.sym; } });
   S.stocks.forEach(s => { const ch = S.sp[s.sym]?.change; if (ch != null && ch > bc) { bc = ch; best = s.sym; } });
@@ -2216,15 +2411,19 @@ async function renderStocksPage(customFrom, customTo) {
       priceStr: pu ? `$<span>${pu.toFixed(2)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
       priceUSD: pu,
       change: chg,
-      pnlDay: pnl
+      pnlDay: pnl,
+      pnlTotal: stockTotalPnl(s)
     });
     return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${i * 50}ms"`);
   }).join('');
   // wrap in grid container for desktop multi-column layout
   el.innerHTML = '<div class="grid">' + el.innerHTML + '</div>';
-  S.stocks.forEach((s, i) => {
-    const chg = changes[i];
-    setTimeout(() => drawSpark(`spk_${s.sym}`, s.sym, false, (chg || 0) >= 0), 40);
+  // draw sparks after the grid has fully laid out
+  requestAnimationFrame(() => {
+    S.stocks.forEach((s, i) => {
+      const chg = changes[i];
+      drawSpark(`spk_${s.sym}`, s.sym, false, (chg || 0) >= 0);
+    });
   });
 
   if (S.sbC) { S.sbC.destroy(); S.sbC = null; }
@@ -2259,16 +2458,19 @@ async function renderCryptoPage() {
     const html = cardHTML({
       sym: a.sym, name: a.name, icon: a.icon, color: a.color, type: 'crypto',
       value: val,
-      qtyLabel: fNum(a.qty) + ' ' + a.sym,
+      qtyLabel: fNum(cQty(a)) + ' ' + a.sym,
       priceStr: pi ? `₪<span>${fP(pi)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
       priceUSD: pu,
       change: chg,
-      pnlDay: pnl
+      pnlDay: pnl,
+      pnlTotal: cryptoTotalPnl(a)
     });
     return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${i * 50}ms"`);
   }).join('');
   el.innerHTML = '<div class="grid">' + el.innerHTML + '</div>';
-  sorted.forEach(({a, chg}) => setTimeout(() => drawSpark(`spk_${a.sym}`, a.sym, true, (chg || 0) >= 0), 40));
+  requestAnimationFrame(() => {
+    sorted.forEach(({a, chg}) => drawSpark(`spk_${a.sym}`, a.sym, true, (chg || 0) >= 0));
+  });
 
   if (S.cbC) { S.cbC.destroy(); S.cbC = null; }
   const uc = upColor(), dc = downColor(), ax = axisColor();
@@ -2965,13 +3167,17 @@ async function renderCryptoModal(a, el) {
   const sig = ch24 > 5 ? 'buy' : ch24 < -5 ? 'sell' : 'hold';
   const sigTxt = sig==='buy'?'🟢 מומנטום חיובי מובהק':sig==='sell'?'🔴 לחץ מכירות':'🟡 פוזיציה נייטרלית';
 
+  const avg = avgEntry(a);
+  const totalPnl = cryptoTotalPnl(a);
   el.innerHTML = `
-    <div class="mh"><div class="mico">${a.icon}</div><div><h2>${a.sym}</h2><p>${a.name} · ${fNum(a.qty)} יחידות החזקה</p></div></div>
+    <div class="mh"><div class="mico">${a.icon}</div><div><h2>${a.sym}</h2><p>${a.name} · ${fNum(cQty(a))} יחידות החזקה</p></div></div>
     <div class="mkpis">
       <div class="mkpi"><div class="mkpi-l">שווי נומינלי</div><div class="mkpi-v ac">${fILS(val)}</div></div>
       <div class="mkpi"><div class="mkpi-l">מחיר שוק</div><div class="mkpi-v">$${fP(pu)}</div></div>
       <div class="mkpi"><div class="mkpi-l">שינוי 24ש</div><div class="mkpi-v ${ch24>=0?'up':'dn'}" style="color:${ch24>=0?'var(--gr)':'var(--rd)'}">${fPct(ch24)}</div></div>
       <div class="mkpi"><div class="mkpi-l">רווח יומי</div><div class="mkpi-v ${pnl>=0?'up':'dn'}" style="color:${pnl>=0?'var(--gr)':'var(--rd)'}">${pnl>=0?'+':''}${fILS(pnl)}</div></div>
+      ${avg!=null ? `<div class="mkpi"><div class="mkpi-l">מחיר כניסה ממוצע</div><div class="mkpi-v gd" style="color:var(--gd)">$${avg.toFixed(2)}</div></div>` : ''}
+      ${totalPnl!=null ? `<div class="mkpi"><div class="mkpi-l">P&L מצטבר</div><div class="mkpi-v ${totalPnl>=0?'up':'dn'}" style="color:${totalPnl>=0?'var(--gr)':'var(--rd)'}">${totalPnl>=0?'+':''}${fILS(totalPnl)}</div></div>` : ''}
     </div>
     <div class="mch"><div class="mchl">גרף רציף מוזן רשת</div>
       <div class="rbtns">
@@ -2996,7 +3202,8 @@ async function renderCryptoModal(a, el) {
         <div class="mr"><span class="mrl">סנכרון רשת</span><span class="mrv" style="color:var(--t3)">${new Date().toLocaleTimeString('he-IL')}</span></div>
         <div class="sig ${sig}"><div class="sdot"></div><div class="stxt">${sigTxt}</div></div>
       </div>
-    </div>`;
+    </div>
+    ${lotsHistoryHTML(a, pu || 0, 'crypto')}`;
   loadCC(a.sym, 1, el.querySelector('.rb.active'));
 }
 
@@ -3006,14 +3213,15 @@ async function loadCC(sym, days, btn) {
   if (box) { box.classList.add('chart-loading'); box.style.opacity = '1'; }
   const raw = await getCryptoHist(sym, days);
   if (box) box.classList.remove('chart-loading');
-  const c2 = document.getElementById('dCanvas'); if (!c2 || !raw.length) return;
-  if (S.dChart) { S.dChart.destroy(); S.dChart = null; }
+  if (!raw.length) return;
   const prices = raw.map(([, p]) => p);
-  const labels = raw.map(([t]) => { const d = new Date(t); return days<=1 ? d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('he-IL',{month:'short',day:'numeric'}); });
-  const up = prices[prices.length-1] >= prices[0];
-  const col = up ? upColor() : downColor();
-
-  S.dChart = new Chart(c2, {type:'line',data:{labels,datasets:[{label:'$',data:prices,borderColor:col,borderWidth:2,pointRadius:0,tension:.2,fill:false}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:0},plugins:{legend:{display:false}},scales:{x:{ticks:{color:axisColor(),font:{size:9},maxTicksLimit:6},grid:{display:false},border:{display:false}},y:{ticks:{color:axisColor(),font:{size:9},callback:v=>'$'+fP(v)},grid:{color:'rgba(127,127,127,0.06)'},border:{display:false},position:'left'}}}});
+  const labels = raw.map(([t]) => {
+    const d = new Date(t);
+    return days <= 1
+      ? d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString('he-IL', { month: 'short', day: 'numeric' });
+  });
+  drawSChart(prices, labels, sym);
 }
 
 function renderStockModal(s, el) {
@@ -3022,6 +3230,8 @@ function renderStockModal(s, el) {
   const sig = chg == null ? 'hold' : chg > 2 ? 'buy' : chg < -2 ? 'sell' : 'hold';
   const sigTxt = sig==='buy'?'🟢 מומנטום חיובי מובהק':sig==='sell'?'🔴 לחץ מימוש':'🟡 פוזיציה נייטרלית';
 
+  const avg = avgEntry(s);
+  const totalPnl = stockTotalPnl(s);
   el.innerHTML = `
     <div class="mh"><div class="mico">${s.icon}</div><div><h2>${s.sym}</h2><p>${s.name} · Equity Market NASDAQ</p></div></div>
     <div class="mkpis">
@@ -3029,6 +3239,8 @@ function renderStockModal(s, el) {
       <div class="mkpi"><div class="mkpi-l">מחיר מנייה</div><div class="mkpi-v">${pu?'$'+pu.toFixed(2):'--'}</div></div>
       <div class="mkpi"><div class="mkpi-l">שינוי יומי</div><div class="mkpi-v ${chg>=0?'up':'dn'}" style="color:${chg>=0?'var(--gr)':'var(--rd)'}">${chg!=null?fPct(chg):'--'}</div></div>
       <div class="mkpi"><div class="mkpi-l">רווח יומי</div><div class="mkpi-v ${pnl>=0?'up':'dn'}" style="color:${pnl>=0?'var(--gr)':'var(--rd)'}">${pnl!=null?(pnl>=0?'+':'')+fILS(pnl):'--'}</div></div>
+      ${avg!=null ? `<div class="mkpi"><div class="mkpi-l">מחיר כניסה ממוצע</div><div class="mkpi-v gd" style="color:var(--gd)">$${avg.toFixed(2)}</div></div>` : ''}
+      ${totalPnl!=null ? `<div class="mkpi"><div class="mkpi-l">P&L מצטבר</div><div class="mkpi-v ${totalPnl>=0?'up':'dn'}" style="color:${totalPnl>=0?'var(--gr)':'var(--rd)'}">${totalPnl>=0?'+':''}${fILS(totalPnl)}</div></div>` : ''}
     </div>
     <div class="mch"><div class="mchl">אינטגרציית גרף שוק</div>
       <div class="rbtns">
@@ -3056,7 +3268,8 @@ function renderStockModal(s, el) {
         <div class="mr"><span class="mrl">נמוך יומי</span><span class="mrv dn" style="color:var(--rd)">$${p?.low?p.low.toFixed(2):'--'}</span></div>
         <div class="sig ${sig}"><div class="sdot"></div><div class="stxt">${sigTxt}</div></div>
       </div>
-    </div>`;
+    </div>
+    ${lotsHistoryHTML(s, pu || 0, 'stock')}`;
   loadSC(s.sym, '1d', el.querySelector('.rb.active'));
 }
 
@@ -3152,7 +3365,7 @@ function drawSChart(prices, labels, sym) {
       },
       scales:{
         x:{ticks:{color:axisColor(),font:{size:9},maxTicksLimit:6},grid:{display:false},border:{display:false}},
-        y:{ticks:{display:false},grid:{color:'rgba(127,127,127,0.06)',drawTicks:false},border:{display:false},position:'left'}
+        y:{ticks:{color:axisColor(),font:{size:9},callback:v=>'$'+(v>=1?v.toFixed(0):v.toFixed(4))},grid:{color:'rgba(127,127,127,0.06)',drawTicks:false},border:{display:false},position:'left'}
       }
     },
     plugins: [{
@@ -3322,19 +3535,32 @@ function renderEd() {
       <button class="tabb ${iC?'active':''}" onclick="edTab='crypto';renderEd()"><i class="ph-thin ph-coins ph-sm"></i> קריפטו (${S.crypto.length})</button>
     </div>
     <div class="alist">
-      ${list.map((a,i) => `
+      ${list.map((a,i) => {
+        const hasLots = Array.isArray(a.lots) && a.lots.length;
+        const totalQty = hasLots ? a.lots.reduce((acc,l)=>acc+(parseFloat(l.qty)||0),0) : (iC ? a.qty : getShares(a));
+        const avg = hasLots ? avgEntry(a) : null;
+        const expanded = (S._lotsOpen||{})[i+'-'+edTab];
+        return `
         <div class="erow">
           <div class="erow-ico">${a.icon}</div>
-          <div class="erow-info"><div class="erow-sym">${a.sym}</div><div class="erow-name">${a.name}</div></div>
+          <div class="erow-info">
+            <div class="erow-sym">${a.sym}</div>
+            <div class="erow-name">${a.name}</div>
+            ${avg!=null ? `<div style="font-size:10px;color:var(--gd);font-family:var(--font-mono);margin-top:2px">@ $${avg.toFixed(2)} ממוצע</div>` : ''}
+          </div>
           ${iC
-            ? `<input class="einput" type="number" value="${a.qty}" step="any" oninput="S.crypto[${i}].qty=parseFloat(this.value)||0;markEdit()">`
-            : `<input class="einput" type="number" value="${getShares(a)}" step="any" placeholder="מניות" oninput="S.stocks[${i}].shares=parseFloat(this.value)||0;markEdit()">`}
+            ? `<input class="einput" type="number" value="${totalQty}" step="any" ${hasLots?'disabled title="מנוהל דרך קניות"':''} oninput="S.crypto[${i}].qty=parseFloat(this.value)||0;markEdit()">`
+            : `<input class="einput" type="number" value="${totalQty}" step="any" placeholder="מניות" ${hasLots?'disabled title="מנוהל דרך קניות"':''} oninput="S.stocks[${i}].shares=parseFloat(this.value)||0;markEdit()">`}
+          <button class="lots-toggle" onclick="toggleLots(${i})" title="ניהול קניות">${hasLots?'📊 '+a.lots.length:'➕ קנייה'}</button>
           <div class="emove">
             <button class="emove-btn" title="הזז למעלה" onclick="moveAsset(${i},-1)" ${i === 0 ? 'disabled' : ''}><i class="fi fi-tr-angle-up"></i></button>
             <button class="emove-btn" title="הזז למטה" onclick="moveAsset(${i},1)" ${i === list.length - 1 ? 'disabled' : ''}><i class="fi fi-tr-angle-down"></i></button>
           </div>
           <button class="edel" onclick="delA(${i})"><i class="ph-thin ph-trash" style="font-size:13px"></i></button>
-        </div>`).join('')}
+        </div>
+        ${expanded ? lotsPanelHTML(i) : ''}
+        `;
+      }).join('')}
     </div>
     <div class="aform">
       <div class="af-t">+ הוספת נכס חדש</div>
@@ -3344,6 +3570,7 @@ function renderEd() {
         ${iC
           ? `<div class="ff"><label>כמות החזקה</label><input id="nQ" type="number" placeholder="0.5" step="any"></div>`
           : `<div class="ff"><label>כמות מניות</label><input id="nQ" type="number" placeholder="10.5" step="any"></div>`}
+        <div class="ff"><label>מחיר כניסה $ <span style="color:var(--t3);font-size:10px">(אופציונלי)</span></label><input id="nP" type="number" placeholder="0.00" step="any"></div>
       </div>
       <button class="fadd" onclick="addA()"><i class="ph-thin ph-plus"></i> הוסף לרשימת המעקב</button>
     </div>
@@ -3442,6 +3669,102 @@ document.addEventListener('click', e => {
   if (box && !e.target.closest('#acBox') && e.target.id !== 'nS') box.classList.remove('show');
 });
 
+// ── Lots history block for the detail modal (read-only, with per-lot P&L) ──
+function lotsHistoryHTML(a, currentPrice, type) {
+  if (!Array.isArray(a.lots) || !a.lots.length) return '';
+  const avg = avgEntry(a);
+  // Currency toggle: default ILS (₪), USD ($) when user clicked the $ button.
+  const isUSD = S.currency === 'usd';
+  const sym = isUSD ? '$' : '₪';
+  const fx  = isUSD ? 1 : S.fx;     // multiply USD amounts by fx to convert to ILS
+  const fmt = (n, d = 2) => sym + n.toLocaleString(isUSD ? 'en' : 'he-IL', {minimumFractionDigits: d, maximumFractionDigits: d});
+  return `
+    <div class="lots-history">
+      <div class="lots-history-title">
+        <h3>היסטוריית קניות</h3>
+        <span class="avg-pill">מחיר ממוצע ${fmt(avg * fx)} · ${a.lots.length} קניות</span>
+      </div>
+      ${a.lots.map((l, j) => {
+        const q = parseFloat(l.qty) || 0;
+        const p = parseFloat(l.price) || 0;
+        const cost = q * p;
+        const value = q * currentPrice;
+        const lotPnlUSD = value - cost;
+        const lotPnl = lotPnlUSD * fx;
+        const lotPnlPct = p > 0 ? ((currentPrice - p) / p) * 100 : 0;
+        const up = lotPnl >= 0;
+        const dateStr = l.date ? new Date(l.date).toLocaleDateString('he-IL', {day:'numeric', month:'short', year:'numeric'}) : '--';
+        return `
+          <div class="lot-card">
+            <div class="lot-card-cell"><div class="lc-l">תאריך</div><div class="lc-v" style="font-size:11px">${dateStr}</div></div>
+            <div class="lot-card-cell"><div class="lc-l">כמות</div><div class="lc-v">${q.toLocaleString('en', {maximumFractionDigits:4})}</div></div>
+            <div class="lot-card-cell"><div class="lc-l">מחיר ${sym}</div><div class="lc-v">${fmt(p * fx)}</div></div>
+            <div class="lot-card-cell"><div class="lc-l">רווח/הפסד</div><div class="lc-v ${up?'up':'dn'}">${up?'+':''}${fmt(lotPnl)}<span style="font-size:10px;opacity:.7;margin-inline-start:4px">${up?'+':''}${lotPnlPct.toFixed(1)}%</span></div></div>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── Lots management — granular buys per asset ──
+function toggleLots(i) {
+  if (!S._lotsOpen) S._lotsOpen = {};
+  const key = i + '-' + edTab;
+  S._lotsOpen[key] = !S._lotsOpen[key];
+  // Ensure the asset has a lots array; if not, seed with the current qty as a single lot
+  const list = edTab === 'crypto' ? S.crypto : S.stocks;
+  const a = list[i];
+  if (!Array.isArray(a.lots)) {
+    const q = edTab === 'crypto' ? (a.qty || 0) : getShares(a);
+    a.lots = q > 0 ? [{qty: q, price: 0, date: new Date().toISOString().slice(0,10)}] : [];
+  }
+  renderEd();
+}
+function lotsPanelHTML(i) {
+  const list = edTab === 'crypto' ? S.crypto : S.stocks;
+  const a = list[i];
+  if (!Array.isArray(a.lots)) a.lots = [];
+  const avg = avgEntry(a);
+  return `
+    <div class="lots-panel">
+      <div class="lots-panel-title">
+        <span>קניות (${a.lots.length})</span>
+        ${avg!=null ? `<span class="lots-panel-avg">מחיר ממוצע: $${avg.toFixed(2)}</span>` : ''}
+      </div>
+      ${a.lots.map((l, j) => `
+        <div class="lot-row">
+          <input type="number" step="any" placeholder="כמות" value="${l.qty||''}" oninput="updateLot(${i},${j},'qty',this.value)">
+          <input type="number" step="any" placeholder="מחיר $" value="${l.price||''}" oninput="updateLot(${i},${j},'price',this.value)">
+          <input type="date" value="${l.date||''}" oninput="updateLot(${i},${j},'date',this.value)">
+          <button class="lot-del" onclick="delLot(${i},${j})" title="מחק קנייה"><i class="ph-thin ph-x" style="font-size:11px"></i></button>
+        </div>
+      `).join('')}
+      <button class="lot-add" onclick="addLot(${i})"><i class="ph-thin ph-plus" style="font-size:11px"></i> הוסף קנייה</button>
+    </div>`;
+}
+function addLot(i) {
+  const list = edTab === 'crypto' ? S.crypto : S.stocks;
+  if (!Array.isArray(list[i].lots)) list[i].lots = [];
+  list[i].lots.push({qty: 0, price: 0, date: new Date().toISOString().slice(0,10)});
+  markEdit();
+  renderEd();
+}
+function delLot(i, j) {
+  const list = edTab === 'crypto' ? S.crypto : S.stocks;
+  if (Array.isArray(list[i].lots)) list[i].lots.splice(j, 1);
+  markEdit();
+  renderEd();
+}
+function updateLot(i, j, field, value) {
+  const list = edTab === 'crypto' ? S.crypto : S.stocks;
+  if (!Array.isArray(list[i].lots) || !list[i].lots[j]) return;
+  if (field === 'date') list[i].lots[j].date = value;
+  else list[i].lots[j][field] = parseFloat(value) || 0;
+  markEdit();
+  // Don't full re-render (would lose input focus). Just update the avg display in this row.
+  const avgEl = document.querySelector('.erow:nth-of-type(' + (i+1) + ') .erow-info div:last-child');
+  // (lightweight: skip live avg update — it'll refresh next render)
+}
+
 function addA() {
   const sym   = (document.getElementById('nS')?.value || '').trim().toUpperCase();
   const name  = (document.getElementById('nN')?.value || '').trim() || sym;
@@ -3449,20 +3772,28 @@ function addA() {
   const color = colors[Math.floor(Math.random() * colors.length)];
   const icon  = autoIcon(sym, name, edTab, color);
   if (!sym) { alert('יש להזין סימבול'); return; }
+  const qty = parseFloat(document.getElementById('nQ')?.value);
+  const entryPrice = parseFloat(document.getElementById('nP')?.value);
+  if (isNaN(qty) || qty <= 0) { alert(edTab==='crypto' ? 'הזן כמות חיובית' : 'הזן כמות מניות חיובית'); return; }
+  // Build initial lot if entry price provided
+  const lots = (!isNaN(entryPrice) && entryPrice > 0)
+    ? [{qty, price: entryPrice, date: new Date().toISOString().slice(0,10)}]
+    : null;
   if (edTab === 'crypto') {
-    const qty = parseFloat(document.getElementById('nQ')?.value);
-    if (isNaN(qty) || qty <= 0) { alert('הזן כמות חיובית'); return; }
     if (S.crypto.find(a => a.sym === sym)) { alert('הנכס כבר קיים'); return; }
-    S.crypto.push({id: edPickedId || CG_ID[sym] || sym.toLowerCase(), sym, name, qty, icon, color});
+    const asset = {id: edPickedId || CG_ID[sym] || sym.toLowerCase(), sym, name, qty, icon, color};
+    if (lots) asset.lots = lots;
+    S.crypto.push(asset);
     edPickedId = null;
   } else {
-    const shares = parseFloat(document.getElementById('nQ')?.value);
-    if (isNaN(shares) || shares <= 0) { alert('הזן כמות מניות חיובית'); return; }
     if (S.stocks.find(s => s.sym === sym)) { alert('המנייה כבר קיימת'); return; }
-    S.stocks.push({sym, name, shares, icon, color});
+    const asset = {sym, name, shares: qty, icon, color};
+    if (lots) asset.lots = lots;
+    S.stocks.push(asset);
   }
-  saveLS();          // persist immediately — the live FB listener must never erase a fresh add
+  saveLS();
   renderEd();
+  launchConfetti();
 }
 
 function saveClose() { saveLS(); S.sparks = {}; S.sChg = {}; S.cChg = {}; closeEd(); doRefresh(); }
@@ -3555,16 +3886,23 @@ async function renderDashPeriod(period, customFrom, customTo) {
 // SYNC & REFRESH
 // ═══════════════════════════════════════════
 async function doRefresh() {
-  const btn = document.getElementById('refreshBtn'); btn.classList.add('spin');
-  await getFX();
-  await Promise.allSettled([getCrypto(), getStocks()]);
-  renderDashCrypto(); renderDashStocks(); updateKPIs();
-  if (S.curPage === 'stocks')   renderStocksPage();
-  if (S.curPage === 'crypto')   renderCryptoPage();
-  if (S.curPage === 'insights') renderInsights();
-  setTimeout(() => { renderDashCrypto(); renderDashStocks(); updateKPIs(); }, 2500);
-  updateClocks();
-  btn.classList.remove('spin');
+  const btn = document.getElementById('refreshBtn');
+  if (btn) btn.classList.add('spin');
+  try {
+    await getFX();
+    await Promise.allSettled([getCrypto(), getStocks()]);
+    renderDashCrypto(); renderDashStocks(); updateKPIs();
+    if (S.curPage === 'stocks')   renderStocksPage();
+    if (S.curPage === 'crypto')   renderCryptoPage();
+    if (S.curPage === 'insights') renderInsights();
+    setTimeout(() => { renderDashCrypto(); renderDashStocks(); updateKPIs(); }, 2500);
+    updateClocks();
+    updateDailyDate();
+  } catch (e) {
+    console.error('Refresh failed:', e);
+  } finally {
+    if (btn) btn.classList.remove('spin');
+  }
 }
 
 
@@ -3577,6 +3915,15 @@ function updateClocks() {
 }
 updateClocks();
 setInterval(updateClocks, 30000);
+// Daily-PnL date label (updates with refresh + every 5 min in case session crosses midnight)
+function updateDailyDate() {
+  const el = document.getElementById('dailyDate');
+  if (!el) return;
+  const isEn = document.documentElement.lang === 'en' || document.documentElement.dir === 'ltr';
+  el.textContent = isEn ? todayEnLabel() : todayHeLabel();
+}
+updateDailyDate();
+setInterval(updateDailyDate, 5 * 60 * 1000);
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDet(); closeEd(); } });
 
@@ -3722,6 +4069,96 @@ document.getElementById('dashDateFrom').value = monthAgoStr;
 
 document.querySelector('.topbar').style.display = 'none';
 document.querySelector('.nav').style.display    = 'none';
+
+// ═══════════════════════════════════════════
+// CONFETTI — celebratory burst when an asset is added (vanilla canvas, no deps)
+// ═══════════════════════════════════════════
+function launchConfetti() {
+  const cv = document.getElementById('confettiCanvas');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = cv.clientWidth || window.innerWidth;
+  const H = cv.clientHeight || window.innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.scale(dpr, dpr);
+  cv.style.display = 'block';
+
+  // Brand-mixed palette: brand accents + festive multi-color confetti
+  const palette = [
+    '#3B6BFF', '#B89150', '#2BD17E', '#FF4D5E', '#9945ff',
+    '#627eea', '#00a3e0', '#FFD24D', '#F471B5', '#41E6B2'
+  ];
+
+  const N = 140;
+  const pieces = [];
+  // Two emitters — left & right of center, like a stage cannon burst
+  const burstY = H * 0.45;
+  for (let k = 0; k < N; k++) {
+    const fromLeft = k < N / 2;
+    const angle = fromLeft
+      ? (Math.PI / 2) + (Math.random() * 0.6 - 0.3)   // up & to the right
+      : (Math.PI / 2) - (Math.random() * 0.6 - 0.3);  // up & to the left
+    const speed = 10 + Math.random() * 14;
+    pieces.push({
+      x: fromLeft ? W * 0.25 : W * 0.75,
+      y: burstY,
+      vx: Math.cos(angle) * speed * (fromLeft ? 1 : -1),
+      vy: -Math.sin(angle) * speed - Math.random() * 6,
+      g: 0.32 + Math.random() * 0.18,                  // gravity per piece
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.35,
+      w: 6 + Math.random() * 6,
+      h: 10 + Math.random() * 8,
+      color: palette[Math.floor(Math.random() * palette.length)],
+      shape: Math.random() < 0.35 ? 'circle' : 'rect',
+      life: 0,
+      drag: 0.985 + Math.random() * 0.012,
+    });
+  }
+
+  let t0 = performance.now();
+  const duration = 2800;
+  function frame(now) {
+    const elapsed = now - t0;
+    ctx.clearRect(0, 0, W, H);
+    pieces.forEach(p => {
+      p.vx *= p.drag;
+      p.vy = p.vy * p.drag + p.g;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life++;
+
+      // fade in last 700ms
+      const fadeStart = duration - 700;
+      const alpha = elapsed < fadeStart ? 1 : Math.max(0, 1 - (elapsed - fadeStart) / 700);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = p.color;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      if (p.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      ctx.restore();
+    });
+    ctx.globalAlpha = 1;
+
+    if (elapsed < duration) {
+      requestAnimationFrame(frame);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      cv.style.display = 'none';
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
 </script>
 
 
@@ -3763,5 +4200,7 @@ document.querySelector('.nav').style.display    = 'none';
   </div>
   <div class="fx-conv-rate" id="fxConvRate">טוען שערים...</div>
 </div>
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:9999;display:none"></canvas>
+
 </body>
 </html>
