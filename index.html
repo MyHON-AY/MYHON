@@ -5416,18 +5416,23 @@ window.proceedToApp = async function() {
 
   const loadAndStart = async () => {
     if (window.fbLoad) {
-      const fbData = await window.fbLoad();
-      if (fbData?.crypto?.length || fbData?.stocks?.length) {
-        if (fbData.crypto?.length) S.crypto = fbData.crypto;
-        if (fbData.stocks?.length) S.stocks = normalizeStocks(fbData.stocks);
-        fixIcons(S.crypto, 'crypto'); fixIcons(S.stocks, 'stock');
-        try {
-          localStorage.setItem('pc', JSON.stringify(S.crypto));
-          localStorage.setItem('ps', JSON.stringify(S.stocks));
-        } catch(_) {}
-      } else {
-        S.crypto = []; S.stocks = [];
-        localStorage.removeItem('pc'); localStorage.removeItem('ps');
+      try {
+        const fbData = await window.fbLoad();
+        // רק אם Firebase החזיר נתונים תקפים (לא null, לא ריק) — דורסים את המקומי.
+        // אחרת — נשארים עם ה-localStorage שכבר נטען ל-S (לא למחוק כלום!).
+        if (fbData && (fbData.crypto?.length || fbData.stocks?.length)) {
+          if (fbData.crypto?.length) S.crypto = fbData.crypto;
+          if (fbData.stocks?.length) S.stocks = normalizeStocks(fbData.stocks);
+          fixIcons(S.crypto, 'crypto'); fixIcons(S.stocks, 'stock');
+          try {
+            localStorage.setItem('pc', JSON.stringify(S.crypto));
+            localStorage.setItem('ps', JSON.stringify(S.stocks));
+          } catch(_) {}
+        }
+        // הערה: לא מוחקים את ה-localStorage גם אם Firebase ריק או לא זמין.
+        // המחיקה הקודמת היא שגרמה לאובדן נתונים בכל פתיחה ללא חיבור מאומת.
+      } catch (e) {
+        console.warn('Firebase load failed, using local data:', e);
       }
     }
     doRefresh();
