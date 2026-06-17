@@ -3528,7 +3528,9 @@ function updateKPIs() {
   const badge = document.getElementById('chgBadge');
   badge.textContent = fPct(pnlPct); badge.className = 'badge ' + (pnlPct >= 0 ? 'up' : 'dn');
   const pnlEl = document.getElementById('chgAbs');
-  pnlEl.textContent = (pnlTotal >= 0 ? '+' : '') + fILS(pnlTotal);
+  const pnlAbsStr = (pnlTotal >= 0 ? '+' : '') + fILS(pnlTotal);
+  const pnlPctStr = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+  pnlEl.innerHTML = `${pnlAbsStr} <span style="opacity:.75;font-size:.78em">(${pnlPctStr})</span>`;
   pnlEl.style.color = pnlTotal >= 0 ? 'var(--gr)' : 'var(--rd)';
   // When all stocks contribute 0 to today's P&L (US market closed), show a small hint
   const stocksPnl = S.stocks.reduce((a, s) => a + (spnl(s) || 0), 0);
