@@ -13,10 +13,15 @@
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=David+Libre:wght@400;500;700&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="dns-prefetch" href="https://api.coingecko.com">
+<link rel="dns-prefetch" href="https://api.binance.com">
+<link rel="dns-prefetch" href="https://query1.finance.yahoo.com">
+<link rel="dns-prefetch" href="https://finnhub.io">
+<link rel="dns-prefetch" href="https://api.allorigins.win">
+<link rel="preconnect" href="https://api.binance.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Manrope:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-thin-rounded/css/uicons-thin-rounded.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/thin/style.css">
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 /* ════════════════════════════════════════════════════════════════
@@ -64,10 +69,10 @@ body.light {
   --bl:   #3B6BFF;
   --gd:   #B89150;   /* brass garnish (same) */
   --rd:   #E4344C;   /* losses */
-  --gr:   #18A862;   /* gains */
+  --gr:   #0A7A40;   /* gains — darker for readable contrast on light glass */
   --t1:   #0A0F1F;   /* primary text (mirror of dark --bg) */
-  --t2:   #5d6b82;
-  --t3:   #9aa3b4;
+  --t2:   #2E3958;   /* secondary text — dark slate, readable on glass */
+  --t3:   #4A5878;   /* tertiary / captions — still readable on light glass */
   /* Same fonts as dark mode for visual parity */
   --font-logo:  'Instrument Serif', serif;
   --font-title: 'Instrument Serif', serif;
@@ -122,13 +127,117 @@ body.light .logo-m { border-radius: 50%; background: var(--ac); color: var(--bg)
 
 .ibtn { width: 34px; height: 34px; border-radius: var(--radius-sm); background: var(--s1); border: 1px solid var(--b1); color: var(--t2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.15s; }
 .ibtn:hover { border-color: var(--ac); color: var(--t1); background: var(--s2); }
-.ibtn.spin svg { animation: rot .6s linear; }
+.ibtn.spin svg { animation: rot .7s linear infinite; }
 @keyframes rot { to { transform: rotate(360deg); } }
+
+/* ── Global refresh overlay ── */
+#refreshOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none; opacity: 0;
+  transition: opacity .18s ease;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: max(env(safe-area-inset-top, 0px), 14px);
+  padding-top: calc(max(env(safe-area-inset-top, 0px), 14px) + 56px);
+}
+#refreshOverlay.show { opacity: 1; pointer-events: none; }
+.refresh-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--s2); border: 1px solid var(--b1);
+  border-radius: 100px;
+  padding: 7px 14px 7px 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  color: var(--t2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateY(-8px);
+  transition: transform .22s cubic-bezier(.2,.9,.3,1.1);
+}
+#refreshOverlay.show .refresh-pill { transform: translateY(0); }
+.refresh-pill-spin {
+  width: 14px; height: 14px;
+  border: 2px solid var(--b2);
+  border-top-color: var(--ac);
+  border-radius: 50%;
+  animation: rot .7s linear infinite;
+  flex-shrink: 0;
+}
 #ts { font-size: 11px; color: var(--t3); font-family: var(--font-mono); font-weight: 500; margin-right: 4px; display: inline-flex; align-items: center; gap: 6px; }
 #tsUs { color: var(--gd); letter-spacing: .3px; }
 #ts .clock-sep { color: var(--b2); opacity: .8; }
 
 /* ── BOTTOM NAV ── */
+/* ── Sync & Backup section in the editor ── */
+.sync-section { margin-top: 14px; padding: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--b1); border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 8px; }
+.sync-title { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 2px; }
+.sync-status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--t2); padding: 8px 10px; background: var(--s2); border-radius: 6px; font-family: var(--font-body); }
+.sync-status.connected { color: var(--gr); background: color-mix(in srgb, var(--gr) 10%, transparent); }
+.sync-status i { font-size: 14px; }
+.sync-btn { background: var(--s2); border: 1px solid var(--b2); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--t1); font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .15s; }
+.sync-btn:hover { background: var(--s3); border-color: var(--ac); }
+.sync-btn.primary { background: var(--ac); color: #fff; border-color: var(--ac); }
+.sync-btn.primary:hover { filter: brightness(1.1); }
+.sync-btn i { font-size: 14px; }
+.sync-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* ── Loading shimmer — sweeps a soft light bar across the card while data is fetching ── */
+.card-loading {
+  position: relative;
+  overflow: hidden;
+}
+.card-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -75%;
+  width: 75%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.02) 70%,
+    transparent 100%
+  );
+  animation: cardShimmer 2.6s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes cardShimmer {
+  0%   { transform: translateX(0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(240%); opacity: 0; }
+}
+body.light .card-loading::after {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 30%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0.12) 70%,
+    transparent 100%
+  );
+}
+
+/* When data is unreachable after several retries, fade the card slightly + show indicator */
+.card-unavailable { opacity: 0.65; }
+.card-unavailable::before {
+  content: '⚠ נתונים לא זמינים';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 9px;
+  font-family: var(--font-body);
+  color: var(--rd);
+  background: color-mix(in srgb, var(--rd) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rd) 28%, transparent);
+  padding: 2px 7px;
+  border-radius: 100px;
+  z-index: 2;
+}
+
 /* ── Pill-style glass navbar (mobile) — Figma reference look ── */
 .nav {
   position: fixed;
@@ -814,6 +923,63 @@ body.light .ov { background: rgba(11,30,63,0.42); }
 .mclose { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); left: 16px; width: 36px; height: 36px; border-radius: 50%; background: var(--s3); border: 1px solid var(--b1); color: var(--t2); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
 @media(min-width: 640px) { .mclose { top: 16px; width: 28px; height: 28px; border-radius: var(--radius-sm); } }
 .mclose:hover { color: var(--rd); background: var(--b1); }
+.sell-btn { width: 100%; margin-top: 14px; padding: 13px; border-radius: var(--radius-sm); border: 1px solid transparent; background: #f1f4fb; color: #0A0F1F; font-family: var(--font-body); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: opacity .15s, transform .1s; }
+body.light .sell-btn { background: #b89150; color: #fff; }
+.sell-btn:hover { opacity: .88; }
+.sell-btn:active { transform: scale(.98); }
+.sell-btn i { font-size: 16px; }
+.sell-cur-toggle { background: none; border: none; cursor: pointer; font-family: var(--font-mono, monospace); font-size: 14px; font-weight: 700; color: var(--gr); padding: 0 2px; line-height: 1; transition: opacity .12s; white-space: nowrap; }
+.sell-cur-toggle:hover { opacity: .75; }
+
+/* ── חלונית מכירה ── */
+#sellOv { align-items: center; justify-content: center; z-index: 300; }
+.sell-modal {
+  width: min(380px, 92vw);
+  background: var(--s2, #14161f);
+  border: 1px solid var(--b1);
+  border-radius: 22px;
+  padding: 24px 22px 20px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  font-family: var(--font-body);
+  position: relative;
+  animation: sellPop .22s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes sellPop { from { transform: scale(.92) translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sell-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.sell-ico { width: 44px; height: 44px; border-radius: 13px; background: var(--s3); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.sell-ico i { font-size: 24px; }
+.sell-sym { font-family: var(--font-display, var(--font-body)); font-size: 21px; font-weight: 600; color: var(--t1); letter-spacing: .5px; }
+.sell-sub { font-size: 12px; color: var(--t3); margin-top: 1px; }
+.sell-qty-display { text-align: center; margin: 6px 0 2px; display: flex; align-items: baseline; justify-content: center; gap: 8px; direction: ltr; }
+.sell-qty-num { font-family: var(--font-mono, monospace); font-size: 38px; font-weight: 700; color: var(--rd); line-height: 1; }
+.sell-qty-lbl { font-size: 13px; color: var(--t3); font-family: var(--font-mono, monospace); }
+.sell-held { text-align: center; font-size: 11px; color: var(--t3); margin-bottom: 16px; }
+.sell-slider { width: 100%; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 100px; background: var(--s3); outline: none; margin: 6px 0 14px; }
+.sell-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--rd); border: 3px solid var(--s2, #14161f); box-shadow: 0 2px 8px rgba(0,0,0,.4); cursor: pointer; }
+.sell-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--rd); border: 3px solid var(--s2, #14161f); cursor: pointer; }
+.sell-pcts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 16px; }
+.sell-pcts button { padding: 9px 0; border-radius: 10px; border: 1px solid var(--b1); background: var(--s3); color: var(--t2); font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .12s; }
+.sell-pcts button:hover { border-color: color-mix(in srgb, var(--rd) 40%, transparent); color: var(--rd); }
+.sell-stepper { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.sell-stepper button { width: 42px; height: 46px; border-radius: 12px; border: 1px solid var(--b1); background: var(--s3); color: var(--t1); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .12s; }
+.sell-stepper button:hover { background: var(--b1); }
+.sell-stepper input { flex: 1; height: 46px; text-align: center; border-radius: 12px; border: 1px solid var(--b1); background: var(--s3); color: var(--t1); font-family: var(--font-mono, monospace); font-size: 18px; font-weight: 600; outline: none; min-width: 0; }
+.sell-stepper input:focus { border-color: color-mix(in srgb, var(--rd) 45%, transparent); }
+.sell-proceeds { text-align: center; font-size: 12px; color: var(--t3); min-height: 18px; margin-bottom: 16px; }
+.sell-proceeds b { color: var(--gr); font-family: var(--font-mono, monospace); }
+.sell-proceeds-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+.sell-proceeds-lbl { font-size: 12px; color: var(--t3); white-space: nowrap; }
+.sell-proceeds-inp-wrap { display: flex; align-items: center; flex: 1; background: var(--s3); border: 1px solid var(--b1); border-radius: 10px; padding: 0 10px; gap: 5px; transition: border-color .12s; }
+.sell-proceeds-inp-wrap:focus-within { border-color: color-mix(in srgb, var(--gr) 50%, transparent); }
+.sell-proceeds-cur { font-family: var(--font-mono, monospace); font-size: 14px; color: var(--gr); font-weight: 700; }
+.sell-proceeds-inp-wrap input { flex: 1; border: none; background: transparent; color: var(--t1); font-family: var(--font-mono, monospace); font-size: 14px; font-weight: 600; padding: 10px 0; outline: none; text-align: left; direction: ltr; min-width: 0; }
+.sell-actions { display: flex; gap: 10px; }
+.sell-actions button { flex: 1; padding: 14px 0; border-radius: 13px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .12s; }
+.sell-cancel { background: var(--s3); border: 1px solid var(--b1); color: var(--t2); }
+.sell-cancel:hover { background: var(--b1); }
+.sell-confirm { background: var(--rd); border: 1px solid var(--rd); color: #fff; }
+.sell-confirm:hover { filter: brightness(1.08); }
+.sell-confirm:disabled { opacity: .4; cursor: not-allowed; }
 
 .mh { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .mico { width: 46px; height: 46px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 21px; background: var(--s3); border: 1px solid var(--b1); }
@@ -887,11 +1053,11 @@ body.light .rb.active { background: #fff; color: var(--ac); box-shadow: 0 1px 6p
 
 .aform { background: var(--s3); border: 1px solid var(--b1); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; }
 .af-t { font-size: 10px; color: var(--t3); font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
-.fg { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.fg { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; min-width: 0; }
 @media(max-width:560px){ .fg { grid-template-columns: 1fr; } }
-.ff { display: flex; flex-direction: column; gap: 4px; }
+.ff { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ff label { font-size: 9px; color: var(--t3); font-weight: 700; text-transform: uppercase; }
-.ff input { background: var(--s2); border: 1px solid var(--b2); border-radius: var(--radius-sm); padding: 6px 10px; color: var(--t1); font-family: var(--font-body); font-size: 12px; }
+.ff input { background: var(--s2); border: 1px solid var(--b2); border-radius: var(--radius-sm); padding: 6px 10px; color: var(--t1); font-family: var(--font-body); font-size: 12px; width: 100%; min-width: 0; box-sizing: border-box; }
 .ff input:focus { outline: none; border-color: var(--ac); }
 .fadd { width: 100%; background: #f1f4fb; border: 1px solid transparent; color: #0A0F1F; padding: 8px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
 body.light .fadd { background: #b89150; color: #fff; }
@@ -902,6 +1068,103 @@ i.fi { display: inline-flex; align-items: center; justify-content: center; line-
 /* Primary CTA = Voltage (Vector) / Navy (Meridian) — brand: Place order button */
 .fsave { width: 100%; background: var(--ac); border: none; border-radius: var(--radius-sm); padding: 12px; color: #F1F4FB; font-family: var(--font-body); font-size: 13px; font-weight: 800; cursor: pointer; }
 body.light .fsave { color: var(--bg); }
+
+/* ── Light mode: Edit panel fixes ── */
+body.light .erow {
+  background: rgba(10, 15, 31, 0.07) !important;
+  border: 1px solid rgba(10, 15, 31, 0.13) !important;
+}
+body.light .erow-sym { color: var(--t1); }
+body.light .einput {
+  background: #fff !important;
+  border: 1px solid rgba(10,15,31,0.2) !important;
+  color: var(--t1);
+}
+body.light .emove-btn {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(10,15,31,0.15) !important;
+  color: var(--t2);
+}
+body.light .edel { color: var(--t3); }
+body.light .aform {
+  background: rgba(10, 15, 31, 0.04) !important;
+  border: 1px solid rgba(10, 15, 31, 0.1) !important;
+}
+body.light .ff input {
+  background: #fff !important;
+  border: 1px solid rgba(10,15,31,0.2) !important;
+  color: var(--t1);
+}
+body.light .sync-section {
+  background: rgba(10,15,31,0.04) !important;
+  border: 1px solid rgba(10,15,31,0.1) !important;
+}
+body.light .sync-status {
+  background: rgba(10,15,31,0.06) !important;
+}
+body.light .sync-btn:not(.primary) {
+  background: rgba(255,255,255,0.85) !important;
+  border-color: rgba(10,15,31,0.15) !important;
+  color: var(--t1);
+}
+body.light .sync-btn:not(.primary):hover {
+  background: #fff !important;
+}
+body.light .lots-toggle {
+  background: rgba(255,255,255,0.8) !important;
+  border-color: rgba(10,15,31,0.15) !important;
+  color: var(--t2);
+}
+body.light .lot-row input {
+  background: #fff !important;
+  border-color: rgba(10,15,31,0.15) !important;
+  color: var(--t1);
+}
+body.light .lots-panel {
+  background: rgba(10,15,31,0.04) !important;
+  border-color: rgba(10,15,31,0.1) !important;
+}
+/* ── Light mode: refresh pill ── */
+body.light .refresh-pill {
+  background: rgba(255,255,255,0.95) !important;
+  border-color: rgba(10,15,31,0.14) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12) !important;
+  color: var(--t1);
+}
+body.light .refresh-pill-spin {
+  border-color: rgba(10,15,31,0.12) !important;
+  border-top-color: var(--ac) !important;
+}
+/* ── Light mode: sell modal internals ── */
+body.light .sell-modal {
+  background: rgba(255,255,255,0.96) !important;
+  border-color: rgba(10,15,31,0.12) !important;
+}
+body.light .sell-slider { background: rgba(10,15,31,0.1) !important; }
+body.light .sell-pcts button {
+  background: rgba(10,15,31,0.05) !important;
+  border-color: rgba(10,15,31,0.12) !important;
+  color: var(--t1);
+}
+body.light .sell-stepper button {
+  background: rgba(10,15,31,0.05) !important;
+  border-color: rgba(10,15,31,0.12) !important;
+  color: var(--t1);
+}
+body.light .sell-stepper input {
+  background: #fff !important;
+  border-color: rgba(10,15,31,0.15) !important;
+  color: var(--t1);
+}
+body.light .sell-proceeds-inp-wrap {
+  background: #fff !important;
+  border-color: rgba(10,15,31,0.15) !important;
+}
+body.light .sell-cancel {
+  background: rgba(10,15,31,0.06) !important;
+  border-color: rgba(10,15,31,0.12) !important;
+  color: var(--t1);
+}
 
 /* ── LOCK SCREEN ── */
 #lockScreen { position: fixed; inset: 0; z-index: 999; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
@@ -1477,6 +1740,56 @@ if (localStorage.getItem('google_pending_redirect')) {
   <div class="modal"><div class="drag"></div><button class="mclose" onclick="closeDet()"><i class="ph-thin ph-x ph-sm"></i></button><div id="detContent"></div></div>
 </div>
 
+<!-- ── אוברליי טעינה גלובלי ── -->
+<div id="refreshOverlay"><div class="refresh-pill"><div class="refresh-pill-spin"></div>מעדכן נתונים...</div></div>
+
+<!-- ── חלונית מכירה ── -->
+<div class="ov" id="sellOv" onclick="if(event.target===this)closeSell()">
+  <div class="sell-modal">
+    <div class="sell-head">
+      <div class="sell-ico" id="sellIco"></div>
+      <div>
+        <div class="sell-sym" id="sellSym"></div>
+        <div class="sell-sub" id="sellSub"></div>
+      </div>
+    </div>
+
+    <div class="sell-qty-display">
+      <div class="sell-qty-num" id="sellQtyNum">0</div>
+      <div class="sell-qty-lbl" id="sellQtyUnit"></div>
+    </div>
+    <div class="sell-held" id="sellHeld"></div>
+
+    <input type="range" class="sell-slider" id="sellSlider" min="0" max="100" value="0" step="0.01" oninput="onSellSlider(this.value)">
+
+    <div class="sell-pcts">
+      <button onclick="setSellPct(25)">25%</button>
+      <button onclick="setSellPct(50)">50%</button>
+      <button onclick="setSellPct(75)">75%</button>
+      <button onclick="setSellPct(100)">הכל</button>
+    </div>
+
+    <div class="sell-stepper">
+      <button onclick="bumpSell(-1)"><i class="ph-thin ph-minus"></i></button>
+      <input type="number" id="sellInput" step="any" min="0" oninput="onSellInput(this.value)">
+      <button onclick="bumpSell(1)"><i class="ph-thin ph-plus"></i></button>
+    </div>
+
+    <div class="sell-proceeds-row">
+      <span class="sell-proceeds-lbl">תמורה משוערת</span>
+      <div class="sell-proceeds-inp-wrap">
+        <button class="sell-cur-toggle" id="sellCurToggle" onclick="toggleSellCur()" title="החלף מטבע"></button>
+        <input type="number" id="sellIlsInput" min="0" step="any" placeholder="0" oninput="onSellIls(this.value)">
+      </div>
+    </div>
+
+    <div class="sell-actions">
+      <button class="sell-cancel" onclick="closeSell()">ביטול</button>
+      <button class="sell-confirm" id="sellConfirm" onclick="confirmSell()">אישור מכירה</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov" id="edOv" onclick="if(event.target===this)closeEd()">
   <div class="modal"><div class="drag"></div><button class="mclose" onclick="closeEd()"><i class="ph-thin ph-x ph-sm"></i></button><div id="edContent"></div></div>
 </div>
@@ -1621,6 +1934,9 @@ fixIcons(S.crypto, 'crypto'); fixIcons(S.stocks, 'stock');
 // DATA ACQUISITION
 // ═══════════════════════════════════════════
 async function getFX() {
+  // מטמון 5 דקות — אין צורך לשאול שרת FX בכל רענון
+  const FX_TTL = 5 * 60 * 1000;
+  if (S._fxTs && Date.now() - S._fxTs < FX_TTL) return;
   const sources = [
     async () => {
       const r = await fetch('https://api.twelvedata.com/price?symbol=USD/ILS&apikey=d2b5b75a368f46b687628a30c0c5124b', {signal: AbortSignal.timeout(5000)});
@@ -1634,7 +1950,7 @@ async function getFX() {
   for (const fn of sources) {
     try {
       const rate = await fn();
-      if (rate && rate > 2 && rate < 6) { S.fx = rate; break; }
+      if (rate && rate > 2 && rate < 6) { S.fx = rate; S._fxTs = Date.now(); break; }
     } catch(_) {}
   }
   updateFxKpi();
@@ -1704,15 +2020,100 @@ async function getCrypto() {
 
 const FINNHUB_KEY = 'd6kptghr01qmopd1m2o0d6kptghr01qmopd1m2og';
 
+// Fetch a quote from Google Finance (best for TASE .TA stocks)
+// Returns { price, prevClose, change, currency } or null
+// Map Yahoo symbol suffix → Google Finance exchange code + native currency
+const SUFFIX_TO_GOOGLE = {
+  'TA':  { ex: 'TLV',    cur: 'ILS' },  // Tel Aviv
+  'L':   { ex: 'LON',    cur: 'GBP' },  // London
+  'DE':  { ex: 'ETR',    cur: 'EUR' },  // XETRA (Germany)
+  'F':   { ex: 'FRA',    cur: 'EUR' },  // Frankfurt
+  'PA':  { ex: 'EPA',    cur: 'EUR' },  // Paris Euronext
+  'MI':  { ex: 'BIT',    cur: 'EUR' },  // Milan (Borsa Italiana)
+  'AS':  { ex: 'AMS',    cur: 'EUR' },  // Amsterdam
+  'MC':  { ex: 'BME',    cur: 'EUR' },  // Madrid
+  'BR':  { ex: 'EBR',    cur: 'EUR' },  // Brussels
+  'LS':  { ex: 'ELI',    cur: 'EUR' },  // Lisbon
+  'VI':  { ex: 'VIE',    cur: 'EUR' },  // Vienna
+  'SW':  { ex: 'SWX',    cur: 'CHF' },  // Swiss
+  'ST':  { ex: 'STO',    cur: 'SEK' },  // Stockholm
+  'OL':  { ex: 'OSL',    cur: 'NOK' },  // Oslo
+  'CO':  { ex: 'CPH',    cur: 'DKK' },  // Copenhagen
+  'HE':  { ex: 'HEL',    cur: 'EUR' },  // Helsinki
+  'T':   { ex: 'TYO',    cur: 'JPY' },  // Tokyo
+  'HK':  { ex: 'HKG',    cur: 'HKD' },  // Hong Kong
+  'SS':  { ex: 'SHA',    cur: 'CNY' },  // Shanghai
+  'SZ':  { ex: 'SHE',    cur: 'CNY' },  // Shenzhen
+  'AX':  { ex: 'ASX',    cur: 'AUD' },  // Australia
+  'TO':  { ex: 'TSE',    cur: 'CAD' },  // Toronto
+  'V':   { ex: 'CVE',    cur: 'CAD' },  // TSX Venture
+  'SA':  { ex: 'BVMF',   cur: 'BRL' },  // Brazil
+  'MX':  { ex: 'BMV',    cur: 'MXN' },  // Mexico
+  'JO':  { ex: 'JSE',    cur: 'ZAR' },  // Johannesburg
+  'NS':  { ex: 'NSE',    cur: 'INR' },  // India NSE
+  'BO':  { ex: 'BOM',    cur: 'INR' },  // India BSE
+  'KS':  { ex: 'KRX',    cur: 'KRW' },  // Korea
+  'SI':  { ex: 'SGX',    cur: 'SGD' },  // Singapore
+  'NZ':  { ex: 'NZE',    cur: 'NZD' },  // New Zealand
+};
+
+async function fetchGoogleFinanceQuote(sym) {
+  // Convert Yahoo format (DSCT.TA, ENI.MI) → Google Finance format (DSCT:TLV, ENI:BIT)
+  const dotIdx = sym.lastIndexOf('.');
+  if (dotIdx < 0) return null;   // no suffix = US stock, use Finnhub/Yahoo directly
+  const ticker = sym.slice(0, dotIdx);
+  const suffix = sym.slice(dotIdx + 1).toUpperCase();
+  const mapping = SUFFIX_TO_GOOGLE[suffix];
+  if (!mapping) return null;     // unknown exchange
+  const googleSym = `${ticker}:${mapping.ex}`;
+  const nativeCur = mapping.cur;
+  const url = `https://www.google.com/finance/quote/${encodeURIComponent(googleSym)}`;
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const r = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+      if (!r.ok) continue;
+      const text = await r.text();
+      let body = text;
+      try { const j = JSON.parse(text); if (j?.contents) body = j.contents; } catch(_) {}
+      // Google Finance data extraction — try multiple patterns
+      const dataMatch  = body.match(/data-last-price="([\d.]+)"/);
+      const prevMatch  = body.match(/data-prev-close="([\d.]+)"/);
+      const changeMatch = body.match(/data-percent-change="([-\d.]+)"/);
+      // Fallback: JSON-LD structured data
+      const ldMatch = body.match(/"price"\s*:\s*"?([\d.]+)"?/);
+      let price = dataMatch ? parseFloat(dataMatch[1]) : ldMatch ? parseFloat(ldMatch[1]) : null;
+      let prev  = prevMatch ? parseFloat(prevMatch[1]) : null;
+      // Another fallback: look for the price in page JSON blobs
+      if (!price) {
+        const m = body.match(/\[\[\["([\d.]+)","([\d.]+)"\]\]/);
+        if (m) { price = parseFloat(m[1]); prev = prev || parseFloat(m[2]); }
+      }
+      if (price && price > 0) {
+        const chg = changeMatch ? parseFloat(changeMatch[1]) : prev ? ((price - prev) / prev) * 100 : null;
+        return { price, prevClose: prev || price, currency: nativeCur, change: chg, high: price, low: price };
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
 async function fetchYahooQuote(sym) {
   // Yahoo's chart endpoint also returns meta with regular market price, prev close, day high/low —
   // works for ANY symbol on ANY global exchange (POLI.TA, ASML.AS, 7203.T, etc.)
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=5d`;
   const proxies = [
-    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
     u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
     u => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://cors-anywhere.herokuapp.com/${u}`,
+    u => `https://thingproxy.freeboard.io/fetch/${u}`,
   ];
   for (const px of proxies) {
     try {
@@ -1744,11 +2145,18 @@ async function fetchYahooQuote(sym) {
       const low   = meta.regularMarketDayLow;
       const open  = meta.regularMarketOpen;
       if (price && prev) {
+        // Normalize ILA (agorot) → ILS. Yahoo returns TASE prices in agorot (1/100 ILS).
+        const rawCurrency = (meta.currency || 'USD').toUpperCase();
+        const isAgorot = rawCurrency === 'ILA';
+        const divisor = isAgorot ? 100 : 1;
+        const normCurrency = isAgorot ? 'ILS' : rawCurrency;
         return {
-          price, prevClose: prev,
-          high: high ?? price, low: low ?? price,
-          open: open ?? null,                 // today's opening price; null if market hasn't opened yet
-          currency: meta.currency || 'USD',
+          price:     price / divisor,
+          prevClose: prev  / divisor,
+          high:  (high  ?? price) / divisor,
+          low:   (low   ?? price) / divisor,
+          open:  open != null ? open / divisor : null,
+          currency: normCurrency,
           // extended fundamentals from meta
           high52w: meta.fiftyTwoWeekHigh ?? null,
           low52w:  meta.fiftyTwoWeekLow ?? null,
@@ -1764,8 +2172,16 @@ async function fetchYahooQuote(sym) {
 
 async function getStocks() {
   await Promise.all(S.stocks.map(async s => {
-    // Try Yahoo first — supports every global exchange Finnhub doesn't cover on free tier
-    let q = await fetchYahooQuote(s.sym);
+    // For any stock with an exchange suffix (.TA, .MI, .L, .DE etc.), try Google Finance first
+    // Google supports all global exchanges while Yahoo has CORS issues from file://
+    let q = null;
+    const hasSuffix = s.sym.includes('.');
+    if (hasSuffix) {
+      q = await fetchGoogleFinanceQuote(s.sym);
+      if (!q) q = await fetchYahooQuote(s.sym);   // Google failed → Yahoo fallback
+    } else {
+      q = await fetchYahooQuote(s.sym);
+    }
     // Fallback to Finnhub for US tickers only (no dot in symbol)
     if (!q && !s.sym.includes('.')) {
       try {
@@ -1785,7 +2201,15 @@ async function getStocks() {
         currency: q.currency,
         high52w: q.high52w, low52w: q.low52w,
         marketCap: q.marketCap, peRatio: q.peRatio,
+        _failCount: 0,
       };
+    } else {
+      // Track failure count; after 3 retries, mark as "unavailable" so shimmer stops
+      const ent = S.sp[s.sym] || {};
+      ent._failCount = (ent._failCount || 0) + 1;
+      ent._unavailable = ent._failCount >= 3;
+      S.sp[s.sym] = ent;
+      console.warn(`[Yahoo] Failed to fetch ${s.sym} (attempt ${ent._failCount})`);
     }
   }));
 }
@@ -1809,6 +2233,10 @@ async function fetchYahooIntraday(sym) {
       const c = result.indicators?.quote?.[0]?.close;
       if (!t?.length || !c?.length) continue;
       const data = t.map((ts, i) => ({ t: ts * 1000, p: c[i] })).filter(x => x.p != null);
+      // Normalize ILA (agorot) → ILS for Israeli stocks
+      const meta = result?.meta;
+      const divisor = (meta?.currency||'').toUpperCase() === 'ILA' ? 100 : 1;
+      if (divisor !== 1) data.forEach(d => { d.p = d.p / divisor; });
       if (data.length >= 2) return data;
     } catch (_) {}
   }
@@ -1843,6 +2271,9 @@ async function fetchYahooCandles(sym, range) {
         p: c[i],
         o: o?.[i] ?? c[i]
       })).filter(x => x.p != null);
+      // Normalize ILA (agorot) → ILS for TASE stocks
+      const cdiv = (result?.meta?.currency||'').toUpperCase() === 'ILA' ? 100 : 1;
+      if (cdiv !== 1) data.forEach(d => { d.p /= cdiv; d.o /= cdiv; });
       if (data.length >= 2) return data;
     } catch(_) {}
   }
@@ -1927,11 +2358,18 @@ function updateChartDate(range) {
   if (!el) return;
   const now = new Date();
   const isEn = document.documentElement.lang === 'en';
-  const dateStr = now.toLocaleDateString(isEn ? 'en-US' : 'he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
-  const nyTime = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' }).format(now);
-  const isLive = (range === '1d' || range === 1);
+  // Pick timezone + label based on the open asset's native currency
+  const cur = (S.sp[S.sel]?.currency || 'USD').toUpperCase();
+  const tz    = cur==='ILS' ? 'Asia/Jerusalem'   : cur==='EUR' ? 'Europe/Paris'
+               : cur==='GBP' ? 'Europe/London'   : cur==='JPY' ? 'Asia/Tokyo'
+               : 'America/New_York';
+  const tzLbl = cur==='ILS' ? 'TLV' : cur==='EUR' ? 'EU'
+               : cur==='GBP' ? 'LON' : cur==='JPY' ? 'TYO' : 'NY';
+  const dateStr  = fDate(now, { year: 'numeric' });
+  const mktTime  = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz }).format(now);
+  const isLive   = (range === '1d' || range === 1);
   if (isLive) {
-    el.innerHTML = `${dateStr}, <span class="mch-time">NY ${nyTime}</span> · נתונים בזמן אמת`;
+    el.innerHTML = `${dateStr}, <span class="mch-time">${tzLbl} ${mktTime}</span> · נתונים בזמן אמת`;
   } else {
     const rangeNames = { '5d': '5 ימים', '1mo': 'חודש', '3mo': '3 חודשים', '1y': 'שנה', '5y': '5 שנים', 7: 'שבוע', 30: '30 ימים', 90: '3 חודשים' };
     el.innerHTML = `${dateStr} · ${rangeNames[range] || 'היסטוריה'}`;
@@ -2021,12 +2459,39 @@ const cv = (a) => { const p = S.cp[a.id]; return p ? p.usd * S.fx * cQty(a) : 0;
 const cc = (a) => S.cp[a.id]?.ch24 ?? null;
 // Hebrew calendar-day label like "15 ביוני" — used to title daily P&L widgets
 const HE_MONTHS = ['בינואר','בפברואר','במרץ','באפריל','במאי','ביוני','ביולי','באוגוסט','בספטמבר','באוקטובר','בנובמבר','בדצמבר'];
+
+// ── Centralized date formatting per active language ──
+// Numeric, locale-correct: IL → 17.6.26, US → 6/17/26, EU → 17/06/26, etc.
+function _dateLocale() {
+  // map app language code → BCP-47 locale used for Intl formatting
+  const lang = (typeof curLang !== 'undefined' && curLang) || 'he';
+  return {
+    he: 'he-IL', en: 'en-US', ru: 'ru-RU', es: 'es-ES',
+    fr: 'fr-FR', ar: 'ar-SA', de: 'de-DE', zh: 'zh-CN', nl: 'nl-NL'
+  }[lang] || 'en-US';
+}
+// Full short date: 17.6.26 / 6/17/26 / 17/06/2026 — pure numbers in user's locale.
+function fDate(d, opts = {}) {
+  if (!(d instanceof Date)) d = new Date(d);
+  if (isNaN(d)) return '--';
+  return d.toLocaleDateString(_dateLocale(), {
+    day: opts.day || '2-digit',
+    month: opts.month || '2-digit',
+    year: opts.year || '2-digit',
+  });
+}
+// Day+month only, numeric: 17.6 / 6/17 — for chart labels & history rows.
+function fDateShort(d) {
+  if (!(d instanceof Date)) d = new Date(d);
+  if (isNaN(d)) return '--';
+  return d.toLocaleDateString(_dateLocale(), { day: '2-digit', month: '2-digit' });
+}
+
 function todayHeLabel() {
-  const d = new Date();
-  return `${d.getDate()} ${HE_MONTHS[d.getMonth()]}`;
+  return fDate(new Date());
 }
 function todayEnLabel() {
-  return new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+  return fDate(new Date());
 }
 
 const cpnl = (a) => {
@@ -2106,6 +2571,17 @@ function updateFxKpi() {
   }
   el.textContent = rate != null ? def.sym + rate.toFixed(rate < 10 ? 3 : 2) : '---';
   if (sub) sub.textContent = `USD/${cur} רציף`;
+}
+
+// Format a price in the asset's native exchange currency (USD for NASDAQ, ILS for TASE, etc.)
+// pu: the raw price as returned by Yahoo for the symbol (already in native currency).
+// nativeCode: the meta.currency code returned by Yahoo (e.g. 'USD', 'ILS', 'EUR', 'GBP', 'JPY').
+function fPriceNative(pu, nativeCode, decimals = 2) {
+  if (pu == null || isNaN(pu)) return '--';
+  // Prices are already normalized (ILA→ILS done in fetchYahooQuote). Just format.
+  const code = (nativeCode || 'USD').toUpperCase();
+  const def = CURRENCIES[code] || { sym: code + ' ', locale: 'en-US' };
+  return def.sym + pu.toLocaleString(def.locale, {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
 }
 
 // Format a USD-denominated price in the active display currency (returns a string with the right symbol).
@@ -2242,7 +2718,7 @@ const I18N = {
   'מחשב מטריצת תשואות היסטוריות':'Computing historical returns matrix','טוען':'Loading',
   // editor modal
   'סימבול מזהה':'Ticker Symbol','שם הנכס':'Asset Name','כמות החזקה':'Holding Amount','כמות מניות':'Share Count',
-  'מספר מניות':'Number of Shares','מחיר מנייה':'Share Price','אייקון':'Icon','שמור שינויים ורענן':'Save & Refresh',
+  'מספר מניות':'Number of Shares','מחיר מנייה':'Share Price','בורסת תל אביב':'Tel Aviv Stock Exchange','אייקון':'Icon','שמור שינויים ורענן':'Save & Refresh',
   'אפס לברירת מחדל':'Reset to Default','שינוי כמויות, הוספה או גריעה מתיק הנכסים':'Modify amounts, add or remove portfolio assets',
   'ניהול פוזיציות ונכסים':'Position & Asset Management','הוסף לרשימת המעקב':'Add to watchlist',
   // detail modal
@@ -2306,7 +2782,16 @@ const I18N = {
   'פתח ב-Safari':'Open in Safari','לחץ על הכפתור למטה':'Tap the button below',
   // tooltips
   'החלף כיוון מותג':'Switch brand direction','החלף מטבע תצוגה':'Switch display currency','החלף שפה':'Switch language',
-  'התנתק':'Log out','ערוך':'Edit','סנכרון רשת':'Network sync','להתנתק מהמערכת המאובטחת?':'Log out of the secure system?'
+  'התנתק':'Log out','ערוך':'Edit','סנכרון רשת':'Network sync','להתנתק מהמערכת המאובטחת?':'Log out of the secure system?',
+  // sell modal + refresh overlay
+  'מכירה':'Sell','אישור מכירה':'Confirm Sale','ביטול':'Cancel',
+  'תמורה משוערת':'Estimated proceeds',
+  'מכור את כל הפוזיציה':'Sell entire position',
+  'אין פוזיציה למכירה':'No position to sell',
+  'עבור לדולר':'Switch to USD','עבור לשקל':'Switch to ILS',
+  'מתוך':'of','בפוזיציה':'in position',
+  'מעדכן נתונים...':'Updating data...',
+  'הכל':'All'
 };
 const I18N_KEYS = Object.keys(I18N).sort((a, b) => b.length - a.length);
 const HEB_RE = /[\u0590-\u05FF]/;
@@ -2395,6 +2880,11 @@ function applyLang() {
     }
   });
   i18nObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+  // עדכון תצוגות תאריך לפי השפה החדשה
+  if (typeof updateDailyDate === 'function') updateDailyDate();
+  if (typeof renderDashCrypto === 'function') { renderDashCrypto(); renderDashStocks(); }
+  if (S.curPage === 'insights' && typeof buildHistoryTable === 'function') buildHistoryTable();
 }
 
 function i18nNodeAny(n) {
@@ -2444,6 +2934,11 @@ const LANG_DICTS = {
     'מחיר':'Цена','כמות':'Количество','תאריך':'Дата','רווח/הפסד':'Прибыль/Убыток',
     'התנתק':'Выйти','חפש':'Искать','שפה':'Язык','מטבע':'Валюта',
     'קריפטו בלבד':'Только крипто','אינטגרציית גרף שוק':'График рынка',
+    'מכירה':'Продать','אישור מכירה':'Подтвердить продажу','ביטול':'Отмена',
+    'תמורה משוערת':'Ожидаемая выручка','מכור את כל הפוזיציה':'Продать всю позицию',
+    'אין פוזיציה למכירה':'Нет позиции для продажи',
+    'עבור לדולר':'Переключить на USD','עבור לשקל':'Переключить на ILS',
+    'מתוך':'из','בפוזיציה':'в позиции','מעדכן נתונים...':'Обновление данных...','הכל':'Всё',
   },
   es: {
     'דשבורד':'Panel','מניות':'Acciones','קריפטו':'Cripto','חדשות':'Noticias','תובנות':'Insights',
@@ -2453,6 +2948,11 @@ const LANG_DICTS = {
     'מחיר':'Precio','כמות':'Cantidad','תאריך':'Fecha','רווח/הפסד':'Ganancia/Pérdida',
     'התנתק':'Cerrar Sesión','חפש':'Buscar','שפה':'Idioma','מטבע':'Moneda',
     'קריפטו בלבד':'Solo cripto','אינטגרציית גרף שוק':'Gráfico de Mercado',
+    'מכירה':'Vender','אישור מכירה':'Confirmar venta','ביטול':'Cancelar',
+    'תמורה משוערת':'Ingresos estimados','מכור את כל הפוזיציה':'Vender toda la posición',
+    'אין פוזיציה למכירה':'No hay posición para vender',
+    'עבור לדולר':'Cambiar a USD','עבור לשקל':'Cambiar a ILS',
+    'מתוך':'de','בפוזיציה':'en posición','מעדכן נתונים...':'Actualizando datos...','הכל':'Todo',
   },
   fr: {
     'דשבורד':'Tableau','מניות':'Actions','קריפטו':'Crypto','חדשות':'Actualités','תובנות':'Analyses',
@@ -2462,6 +2962,11 @@ const LANG_DICTS = {
     'מחיר':'Prix','כמות':'Quantité','תאריך':'Date','רווח/הפסד':'Profit/Perte',
     'התנתק':'Déconnexion','חפש':'Rechercher','שפה':'Langue','מטבע':'Devise',
     'קריפטו בלבד':'Crypto uniquement','אינטגרציית גרף שוק':'Graphique du marché',
+    'מכירה':'Vendre','אישור מכירה':'Confirmer la vente','ביטול':'Annuler',
+    'תמורה משוערת':'Produit estimé','מכור את כל הפוזיציה':'Vendre toute la position',
+    'אין פוזיציה למכירה':'Aucune position à vendre',
+    'עבור לדולר':'Passer en USD','עבור לשקל':'Passer en ILS',
+    'מתוך':'sur','בפוזיציה':'en position','מעדכן נתונים...':'Mise à jour...','הכל':'Tout',
   },
   ar: {
     'דשבורד':'لوحة التحكم','מניות':'أسهم','קריפטו':'عملات مشفرة','חדשות':'أخبار','תובנות':'تحليلات',
@@ -2471,6 +2976,11 @@ const LANG_DICTS = {
     'מחיר':'سعر','כמות':'الكمية','תאריך':'تاريخ','רווח/הפסד':'ربح/خسارة',
     'התנתק':'تسجيل خروج','חפש':'بحث','שפה':'اللغة','מטבע':'العملة',
     'קריפטו בלבד':'العملات المشفرة فقط','אינטגרציית גרף שוק':'الرسم البياني للسوق',
+    'מכירה':'بيع','אישור מכירה':'تأكيد البيع','ביטול':'إلغاء',
+    'תמורה משוערת':'العائد المقدر','מכור את כל הפוזיציה':'بيع المركز بالكامل',
+    'אין פוזיציה למכירה':'لا يوجد مركز للبيع',
+    'עבור לדולר':'التحويل إلى USD','עבור לשקל':'التحويل إلى ILS',
+    'מתוך':'من','בפוזיציה':'في المركز','מעדכן נתונים...':'جارٍ التحديث...','הכל':'الكل',
   },
   de: {
     'דשבורד':'Übersicht','מניות':'Aktien','קריפטו':'Krypto','חדשות':'Nachrichten','תובנות':'Einblicke',
@@ -2480,6 +2990,11 @@ const LANG_DICTS = {
     'מחיר':'Preis','כמות':'Menge','תאריך':'Datum','רווח/הפסד':'Gewinn/Verlust',
     'התנתק':'Abmelden','חפש':'Suche','שפה':'Sprache','מטבע':'Währung',
     'קריפטו בלבד':'Nur Krypto','אינטגרציית גרף שוק':'Marktdiagramm',
+    'מכירה':'Verkaufen','אישור מכירה':'Verkauf bestätigen','ביטול':'Abbrechen',
+    'תמורה משוערת':'Geschätzter Erlös','מכור את כל הפוזיציה':'Gesamte Position verkaufen',
+    'אין פוזיציה למכירה':'Keine Position zum Verkauf',
+    'עבור לדולר':'Zu USD wechseln','עבור לשקל':'Zu ILS wechseln',
+    'מתוך':'von','בפוזיציה':'in Position','מעדכן נתונים...':'Daten werden aktualisiert...','הכל':'Alles',
   },
   zh: {
     'דשבורד':'控制台','מניות':'股票','קריפטו':'加密货币','חדשות':'新闻','תובנות':'分析',
@@ -2489,6 +3004,11 @@ const LANG_DICTS = {
     'מחיר':'价格','כמות':'数量','תאריך':'日期','רווח/הפסד':'盈亏',
     'התנתק':'退出','חפש':'搜索','שפה':'语言','מטבע':'货币',
     'קריפטו בלבד':'仅加密货币','אינטגרציית גרף שוק':'市场图表',
+    'מכירה':'卖出','אישור מכירה':'确认卖出','ביטול':'取消',
+    'תמורה משוערת':'预计收益','מכור את כל הפוזיציה':'卖出全部仓位',
+    'אין פוזיציה למכירה':'无可卖仓位',
+    'עבור לדולר':'切换为美元','עבור לשקל':'切换为谢克尔',
+    'מתוך':'共','בפוזיציה':'仓位','מעדכן נתונים...':'正在更新数据...','הכל':'全部',
   },
   nl: {
     'דשבורד':'Dashboard','מניות':'Aandelen','קריפטו':'Crypto','חדשות':'Nieuws','תובנות':'Inzichten',
@@ -2498,6 +3018,11 @@ const LANG_DICTS = {
     'מחיר':'Prijs','כמות':'Aantal','תאריך':'Datum','רווח/הפסד':'Winst/Verlies',
     'התנתק':'Uitloggen','חפש':'Zoeken','שפה':'Taal','מטבע':'Valuta',
     'קריפטו בלבד':'Alleen crypto','אינטגרציית גרף שוק':'Marktgrafiek',
+    'מכירה':'Verkopen','אישור מכירה':'Verkoop bevestigen','ביטול':'Annuleren',
+    'תמורה משוערת':'Geschatte opbrengst','מכור את כל הפוזיציה':'Hele positie verkopen',
+    'אין פוזיציה למכירה':'Geen positie om te verkopen',
+    'עבור לדולר':'Naar USD wisselen','עבור לשקל':'Naar ILS wisselen',
+    'מתוך':'van','בפוזיציה':'in positie','מעדכן נתונים...':'Gegevens worden bijgewerkt...','הכל':'Alles',
   },
 };
 
@@ -2909,9 +3434,12 @@ async function drawSpark(cid, key, isCrypto, isUp) {
 // DASHBOARD
 // ═══════════════════════════════════════════
 function cardHTML(o) {
-  const {sym, name, icon, color, type, value, qtyLabel, priceStr, priceUSD, change, pnlDay, pnlTotal} = o;
+  const {sym, name, icon, color, type, value, qtyLabel, priceStr, priceUSD, change, pnlDay, pnlTotal, id} = o;
   const up = change >= 0, pup = (pnlDay || 0) >= 0;
-  return `<div class="card" onclick="openDet('${sym}','${type}')">
+  const meta = type === 'stock' ? S.sp[sym] : S.cp[id];
+  const unavailable = meta?._unavailable;          // gave up after 3 retries
+  const loading = (priceUSD == null) && !unavailable;
+  return `<div class="card${loading?' card-loading':''}${unavailable?' card-unavailable':''}" onclick="openDet('${sym}','${type}')">
     <div class="cg" style="background:${color}"></div>
     <div class="ct" style="direction:ltr;">
       <div class="cid"><div class="ico">${icon}</div>
@@ -2931,7 +3459,7 @@ function cardHTML(o) {
     </div>
     <div class="cf">
       <div class="pi">${priceStr}</div>
-      ${priceUSD?`<div class="pi">USD <span>${fP(priceUSD)}</span></div>`:''}
+      ${priceUSD && type !== 'crypto' ?`<div class="pi">USD <span>${fP(priceUSD)}</span></div>`:''}
     </div>
 </div>`;
 }
@@ -2941,7 +3469,7 @@ function renderDashCrypto() {
   const sorted = [...S.crypto].sort((a, b) => cv(b) - cv(a));
   g.innerHTML = sorted.map((a, idx) => {
     const p = S.cp[a.id], pu = p?.usd, pi = pu ? pu * S.fx : null;
-    const html = cardHTML({sym:a.sym,name:a.name,icon:a.icon,color:a.color,type:'crypto',value:cv(a),qtyLabel:fNum(cQty(a))+' '+a.sym,priceStr:pu?`<span>${fPriceCur(pu)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:cc(a),pnlDay:cpnl(a),pnlTotal:cryptoTotalPnl(a)});
+    const html = cardHTML({sym:a.sym,id:a.id,name:a.name,icon:a.icon,color:a.color,type:'crypto',value:cv(a),qtyLabel:fNum(cQty(a))+' '+a.sym,priceStr:pu?`<span>$${fP(pu)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:cc(a),pnlDay:cpnl(a),pnlTotal:cryptoTotalPnl(a)});
     return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${idx * 50}ms"`);
   }).join('');
   sorted.forEach(a => setTimeout(() => drawSpark(`spk_${a.sym}`, a.sym, true, cc(a) >= 0), 40));
@@ -2951,7 +3479,7 @@ function renderDashStocks() {
   const g = document.getElementById('dSGrid');
   g.innerHTML = S.stocks.map((s, idx) => {
     const p = S.sp[s.sym], pu = p?.price;
-    const html = cardHTML({sym:s.sym,name:s.name,icon:s.icon,color:s.color,type:'stock',value:sv(s),qtyLabel:'NASDAQ / Equity',priceStr:pu?`<span>${fPriceCur(pu, 2)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:p?.change??null,pnlDay:spnl(s),pnlTotal:stockTotalPnl(s)});
+    const html = cardHTML({sym:s.sym,name:s.name,icon:s.icon,color:s.color,type:'stock',value:sv(s),qtyLabel:'NASDAQ / Equity',priceStr:pu?`<span>${fPriceNative(pu, S.sp[s.sym]?.currency, 2)}</span>`:'<span style="color:var(--t3)">טוען...</span>',priceUSD:pu,change:p?.change??null,pnlDay:spnl(s),pnlTotal:stockTotalPnl(s)});
     return html.replace('<div class="card"', `<div class="card card-enter" style="animation-delay:${idx * 50}ms"`);
   }).join('');
   S.stocks.forEach(s => { const p = S.sp[s.sym]; if (p) setTimeout(() => drawSpark(`spk_${s.sym}`, s.sym, false, p.change >= 0), 40); });
@@ -3083,7 +3611,7 @@ async function renderStocksPage(customFrom, customTo) {
       sym: s.sym, name: s.name, icon: s.icon, color: s.color, type: 'stock',
       value: val,
       qtyLabel: 'NASDAQ / Equity',
-      priceStr: pu ? `<span>${fPriceCur(pu, 2)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
+      priceStr: pu ? `<span>${fPriceNative(pu, S.sp[s.sym]?.currency, 2)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
       priceUSD: pu,
       change: chg,
       pnlDay: pnl,
@@ -3134,7 +3662,7 @@ async function renderCryptoPage() {
       sym: a.sym, name: a.name, icon: a.icon, color: a.color, type: 'crypto',
       value: val,
       qtyLabel: fNum(cQty(a)) + ' ' + a.sym,
-      priceStr: pu ? `<span>${fPriceCur(pu)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
+      priceStr: pu ? `<span>$${fP(pu)}</span>` : '<span style="color:var(--t3)">טוען...</span>',
       priceUSD: pu,
       change: chg,
       pnlDay: pnl,
@@ -3644,7 +4172,7 @@ async function buildHistoryTable() {
   // Update range title
   const titleEl = document.getElementById('histRangeTitle');
   if (titleEl) {
-    const fmtDate = d => d.toLocaleDateString('he-IL', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\./g, '/');
+    const fmtDate = d => fDate(d, { year: 'numeric' });
     const dateFrom = new Date(); dateFrom.setDate(dateFrom.getDate() - days);
     titleEl.textContent = `${fmtDate(dateFrom)} 00:00 ➔ ${fmtDate(new Date())} 00:00`;
   }
@@ -3777,7 +4305,7 @@ async function buildHistoryTable() {
 
     for (const row of rows) {
       const { dateKey, prevTotal, total, hasTrading } = row;
-      const dateStr = new Date(dateKey).toLocaleDateString('he-IL', {day:'2-digit', month:'2-digit'});
+      const dateStr = fDateShort(new Date(dateKey));
       const pnl = total - prevTotal; const pct = prevTotal ? (pnl / prevTotal * 100) : 0;
       const up  = pnl >= 0; const dim = hasTrading ? '' : 'opacity:0.5';
 
@@ -3848,7 +4376,7 @@ async function renderCryptoModal(a, el) {
     <div class="mh"><div class="mico">${a.icon}</div><div><h2>${a.sym}</h2><p>${a.name} · ${fNum(cQty(a))} יחידות החזקה</p></div></div>
     <div class="mkpis">
       <div class="mkpi"><div class="mkpi-l">שווי נומינלי</div><div class="mkpi-v ac">${fILS(val)}</div></div>
-      <div class="mkpi"><div class="mkpi-l">מחיר שוק</div><div class="mkpi-v">${pu?fPriceCur(pu):'--'}</div></div>
+      <div class="mkpi"><div class="mkpi-l">מחיר שוק</div><div class="mkpi-v">${pu?'$'+fP(pu):'--'}</div></div>
       <div class="mkpi"><div class="mkpi-l">שינוי 24ש</div><div class="mkpi-v ${ch24>=0?'up':'dn'}" style="color:${ch24>=0?'var(--gr)':'var(--rd)'}">${fPct(ch24)}</div></div>
       <div class="mkpi"><div class="mkpi-l">רווח יומי</div><div class="mkpi-v ${pnl>=0?'up':'dn'}" style="color:${pnl>=0?'var(--gr)':'var(--rd)'}">${pnl>=0?'+':''}${fILS(pnl)}</div></div>
       ${avg!=null ? `<div class="mkpi"><div class="mkpi-l">מחיר כניסה ממוצע</div><div class="mkpi-v gd" style="color:var(--gd)">${fPriceCur(avg,2)}</div></div>` : ''}
@@ -3888,7 +4416,8 @@ async function renderCryptoModal(a, el) {
       <div class="fund-cell"><div class="fund-l">היצע במחזור</div><div class="fund-v">${p?.circulatingSupply?fBig(p.circulatingSupply)+' '+a.sym:'--'}</div></div>
       <div class="fund-cell"><div class="fund-l">היצע כולל</div><div class="fund-v">${p?.totalSupply?fBig(p.totalSupply)+' '+a.sym:'--'}</div></div>
     </div>
-    ${lotsHistoryHTML(a, pu || 0, 'crypto')}`;
+    ${lotsHistoryHTML(a, pu || 0, 'crypto')}
+    <button class="sell-btn" onclick="sellAsset('${a.id}','crypto')"><i class="ph-thin ph-hand-coins"></i> מכירה</button>`;
   loadCC(a.sym, 1, el.querySelector('.rb.active'));
 }
 
@@ -3906,8 +4435,8 @@ async function loadCC(sym, days, btn, silent) {
   const labels = raw.map(([t]) => {
     const d = new Date(t);
     return days <= 1
-      ? d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
-      : d.toLocaleDateString('he-IL', { month: 'short', day: 'numeric' });
+      ? d.toLocaleTimeString(_dateLocale(), { hour: '2-digit', minute: '2-digit' })
+      : fDateShort(d);
   });
   drawSChart(prices, labels, sym);
   updateChartDate(days);
@@ -3922,10 +4451,19 @@ function renderStockModal(s, el) {
   const avg = avgEntry(s);
   const totalPnl = stockTotalPnl(s);
   el.innerHTML = `
-    <div class="mh"><div class="mico">${s.icon}</div><div><h2>${s.sym}</h2><p>${s.name} · Equity Market NASDAQ</p></div></div>
+    <div class="mh"><div class="mico">${s.icon}</div><div><h2>${s.sym}</h2><p>${s.name} · ${(() => {
+        const c = (p?.currency || 'USD').toUpperCase();
+        if (c === 'USD') return 'NASDAQ / NYSE';
+        if (c === 'ILS' || c === 'ILA') return 'TASE · בורסת תל אביב';
+        if (c === 'EUR') return 'Euronext';
+        if (c === 'GBP') return 'LSE · London Stock Exchange';
+        if (c === 'JPY') return 'TSE · Tokyo Stock Exchange';
+        if (c === 'HKD') return 'HKEX · Hong Kong';
+        return c + ' Exchange';
+      })()}</p></div></div>
     <div class="mkpis">
       <div class="mkpi"><div class="mkpi-l">שווי נומינלי</div><div class="mkpi-v ac">${fILS(val)}</div></div>
-      <div class="mkpi"><div class="mkpi-l">מחיר מנייה</div><div class="mkpi-v">${pu?fPriceCur(pu,2):'--'}</div></div>
+      <div class="mkpi"><div class="mkpi-l">מחיר מנייה</div><div class="mkpi-v">${pu?fPriceNative(pu, p?.currency, 2):'--'}</div></div>
       <div class="mkpi"><div class="mkpi-l">שינוי יומי</div><div class="mkpi-v ${chg>=0?'up':'dn'}" style="color:${chg>=0?'var(--gr)':'var(--rd)'}">${chg!=null?fPct(chg):'--'}</div></div>
       <div class="mkpi"><div class="mkpi-l">רווח יומי</div><div class="mkpi-v ${pnl>=0?'up':'dn'}" style="color:${pnl>=0?'var(--gr)':'var(--rd)'}">${pnl!=null?(pnl>=0?'+':'')+fILS(pnl):'--'}</div></div>
       ${avg!=null ? `<div class="mkpi"><div class="mkpi-l">מחיר כניסה ממוצע</div><div class="mkpi-v gd" style="color:var(--gd)">${fPriceCur(avg,2)}</div></div>` : ''}
@@ -3947,16 +4485,16 @@ function renderStockModal(s, el) {
     <div class="man">
       <div class="manc"><div class="mant">📊 פוזיציית החזקה</div>
         <div class="mr"><span class="mrl">מספר מניות</span><span class="mrv">${sh?sh.toFixed(3):'--'}</span></div>
-        <div class="mr"><span class="mrl">שווי כולל ₪</span><span class="mrv">${fILS(val)}</span></div>
-        <div class="mr"><span class="mrl">שווי כולל $</span><span class="mrv">USD ${(val/S.fx).toFixed(0)}</span></div>
+        <div class="mr"><span class="mrl">שווי כולל</span><span class="mrv">${fPriceNative(pu * (sh||0), p?.currency, 0)}</span></div>
+        ${(p?.currency||'USD')!=='USD' && (p?.currency||'USD')!=='ILS' ? `<div class="mr"><span class="mrl">שווי ב-USD</span><span class="mrv">USD ${(val/S.fx).toFixed(0)}</span></div>` : ''}
         <div class="mr"><span class="mrl">נתח בתיק</span><span class="mrv gd">${pct.toFixed(1)}%</span></div>
       </div>
       <div class="manc"><div class="mant">📈 נתוני מסחר</div>
         <div class="mr"><span class="mrl">שינוי יומי</span><span class="mrv ${chg>=0?'up':'dn'}" style="color:${chg>=0?'var(--gr)':'var(--rd)'}">${chg!=null?fPct(chg):'--'}</span></div>
         <div class="mr"><span class="mrl">P&L יומי</span><span class="mrv ${pnl>=0?'up':'dn'}" style="color:${pnl>=0?'var(--gr)':'var(--rd)'}">${pnl!=null?(pnl>=0?'+':'')+fILS(pnl):'--'}</span></div>
-        <div class="mr"><span class="mrl">סגירה קודמת</span><span class="mrv">${p?.prevClose?fPriceCur(p.prevClose, 2):'--'}</span></div>
-        <div class="mr"><span class="mrl">גבוה יומי</span><span class="mrv up" style="color:var(--gr)">${p?.high?fPriceCur(p.high, 2):'--'}</span></div>
-        <div class="mr"><span class="mrl">נמוך יומי</span><span class="mrv dn" style="color:var(--rd)">${p?.low?fPriceCur(p.low, 2):'--'}</span></div>
+        <div class="mr"><span class="mrl">סגירה קודמת</span><span class="mrv">${p?.prevClose?fPriceNative(p.prevClose, p?.currency, 2):'--'}</span></div>
+        <div class="mr"><span class="mrl">גבוה יומי</span><span class="mrv up" style="color:var(--gr)">${p?.high?fPriceNative(p.high, p?.currency, 2):'--'}</span></div>
+        <div class="mr"><span class="mrl">נמוך יומי</span><span class="mrv dn" style="color:var(--rd)">${p?.low?fPriceNative(p.low, p?.currency, 2):'--'}</span></div>
         <div class="sig ${sig}"><div class="sdot"></div><div class="stxt">${sigTxt}</div></div>
       </div>
     </div>
@@ -3966,7 +4504,8 @@ function renderStockModal(s, el) {
       <div class="fund-cell"><div class="fund-l">שיא 52ש</div><div class="fund-v up" style="color:var(--gr)">${p?.high52w?fPriceCur(p.high52w,2):'--'}</div></div>
       <div class="fund-cell"><div class="fund-l">שפל 52ש</div><div class="fund-v dn" style="color:var(--rd)">${p?.low52w?fPriceCur(p.low52w,2):'--'}</div></div>
     </div>
-    ${lotsHistoryHTML(s, pu || 0, 'stock')}`;
+    ${lotsHistoryHTML(s, pu || 0, 'stock')}
+    <button class="sell-btn" onclick="sellAsset('${s.sym}','stock')"><i class="ph-thin ph-hand-coins"></i> מכירה</button>`;
   loadSC(s.sym, '1d', el.querySelector('.rb.active'));
 }
 
@@ -3981,40 +4520,47 @@ async function loadSC(sym, range, btn, silent) {
   let prices = [], labels = [];
   if (range === '1d') {
     const intraday = await fetchYahooIntraday(sym);
+    // Determine exchange timezone + label from the stock's native currency
+    const nc = (S.sp[sym]?.currency || 'USD').toUpperCase();
+    const mktTz  = nc==='ILS'?'Asia/Jerusalem':nc==='EUR'?'Europe/Paris':nc==='GBP'?'Europe/London'
+                 : nc==='JPY'?'Asia/Tokyo':nc==='HKD'?'Asia/Hong_Kong':nc==='AUD'?'Australia/Sydney'
+                 : nc==='CAD'?'America/Toronto':nc==='CHF'?'Europe/Zurich':'America/New_York';
+    const mktLbl = nc==='ILS'?'TLV':nc==='EUR'?'EU':nc==='GBP'?'LON':nc==='JPY'?'TYO'
+                 : nc==='HKD'?'HKG':nc==='AUD'?'SYD':nc==='CAD'?'TOR':nc==='CHF'?'ZRH':'NY';
+    const mktOpenH  = nc==='ILS'?9:nc==='GBP'?8:nc==='JPY'?9:9;
+    const mktOpenM  = nc==='ILS'?59:nc==='USD'?30:0;
+    const mktCloseH = nc==='ILS'?17:nc==='GBP'?16:nc==='JPY'?15:16;
+    const mktCloseM = nc==='ILS'?25:0;
+    const mktTotalMins = (mktCloseH*60+mktCloseM) - (mktOpenH*60+mktOpenM);
+    const tzFmt = new Intl.DateTimeFormat('en-US', { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:mktTz });
     if (intraday?.length) {
       prices = intraday.map(d => d.p);
-      // labels: actual HH:MM time per 5-minute candle — always in NY time (the market's time)
-      const tzFmt = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' });
       labels = intraday.map((d, i) => {
         const t = tzFmt.format(new Date(d.t));
-        return i === 0 ? `NY ${t}` : t;     // mark the timezone only on the first tick
+        return i === 0 ? `${mktLbl} ${t}` : t;
       });
     } else {
-      // fallback: synth a soft curve between prevClose and current price so it's not a flat line.
-      // CRUCIAL: only extend the curve up to the current time in NY (not until 16:00),
-      // so a chart drawn at 11:30 NY only shows 09:30 → 11:30 — like Google Finance does.
+      // Synthetic fallback using correct market timezone
       const p = S.sp[sym];
       if (p?.price && p?.prevClose) {
         const open = p.prevClose, close = p.price;
-        // How many minutes since market open (09:30 NY)?
-        const nyNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-        const dow = nyNow.getDay();
+        const mktNow = new Date(new Date().toLocaleString('en-US', { timeZone: mktTz }));
+        const dow = mktNow.getDay();
+        const isClosed = (nc==='ILS' && dow===6) || (nc!=='ILS' && (dow===0||dow===6));
         let minsFromOpen;
-        if (dow === 0 || dow === 6) {
-          // Weekend: show the full prior trading day
-          minsFromOpen = 390;
+        if (isClosed) {
+          minsFromOpen = mktTotalMins;
         } else {
-          const todayOpen = new Date(nyNow); todayOpen.setHours(9, 30, 0, 0);
-          const todayClose = new Date(nyNow); todayClose.setHours(16, 0, 0, 0);
-          if (nyNow < todayOpen) minsFromOpen = 0;          // before market open → nothing yet
-          else if (nyNow > todayClose) minsFromOpen = 390;  // after close → full day
-          else minsFromOpen = Math.floor((nyNow - todayOpen) / 60000);
+          const todayOpen  = new Date(mktNow); todayOpen.setHours(mktOpenH, mktOpenM, 0, 0);
+          const todayClose = new Date(mktNow); todayClose.setHours(mktCloseH, mktCloseM, 0, 0);
+          if (mktNow < todayOpen) minsFromOpen = 0;
+          else if (mktNow > todayClose) minsFromOpen = mktTotalMins;
+          else minsFromOpen = Math.floor((mktNow - todayOpen) / 60000);
         }
         if (minsFromOpen <= 0) {
-          // Market hasn't opened — show just the opening price as a single point
-          prices = [open]; labels = ['09:30'];
+          prices = [open];
+          labels = [`${mktLbl} ${String(mktOpenH).padStart(2,'0')}:${String(mktOpenM).padStart(2,'0')}`];
         } else {
-          // 5-minute candles up to the current moment (matches Yahoo's interval)
           const n = Math.max(2, Math.min(78, Math.floor(minsFromOpen / 5) + 1));
           prices = Array.from({ length: n }, (_, i) => {
             const t = i / (n - 1);
@@ -4024,10 +4570,10 @@ async function loadSC(sym, range, btn, silent) {
           });
           labels = prices.map((_, i) => {
             const m = (i / (prices.length - 1)) * minsFromOpen;
-            const totalMin = 9 * 60 + 30 + m;
+            const totalMin = mktOpenH * 60 + mktOpenM + m;
             const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
             const mm = String(Math.floor(totalMin % 60)).padStart(2, '0');
-            return i === 0 ? `NY ${hh}:${mm}` : `${hh}:${mm}`;
+            return i === 0 ? `${mktLbl} ${hh}:${mm}` : `${hh}:${mm}`;
           });
         }
       }
@@ -4043,9 +4589,9 @@ async function loadSC(sym, range, btn, silent) {
   prices = data.map(d => d.p);
   labels = data.map(d => {
     const dt = new Date(d.t);
-    if (range==='5d') return dt.toLocaleDateString('he-IL',{weekday:'short'});
-    if (range==='1mo'||range==='3mo') return dt.toLocaleDateString('he-IL',{month:'short',day:'numeric'});
-    return dt.toLocaleDateString('he-IL',{month:'short',year:'2-digit'});
+    if (range==='5d') return dt.toLocaleDateString(_dateLocale(),{weekday:'short'});
+    if (range==='1mo'||range==='3mo') return fDateShort(dt);
+    return dt.toLocaleDateString(_dateLocale(),{month:'2-digit',year:'2-digit'});
   });
   drawSChart(prices, labels, sym);
   updateChartDate(range);
@@ -4084,13 +4630,18 @@ function drawSChart(prices, labels, sym) {
           bodyFont:  { family:"'Geist Mono', monospace", size: 13, weight: '700' },
           callbacks: {
             title: items => items[0]?.label || '',
-            label: ctx => '$: ' + Number(ctx.parsed.y).toFixed(2),
+            label: ctx => {
+              const v = ctx.parsed.y;
+              const nc = (S.sp[S.sel]?.currency || 'USD').toUpperCase();
+              const def = CURRENCIES[nc] || { sym: nc + ' ' };
+              return `${def.sym}: ${v.toFixed(2)}`;
+            },
           },
         },
       },
       scales:{
         x:{ticks:{color:axisColor(),font:{size:9},maxTicksLimit:6},grid:{display:false},border:{display:false}},
-        y:{ticks:{color:axisColor(),font:{size:9},callback:function(v){const cur=(S.currency||'ils').toUpperCase();const def=CURRENCIES[cur]||CURRENCIES.ILS;const inIls=v*S.fx;const cv=convertFromILS(inIls,cur);return def.sym+(cv>=1?cv.toFixed(0):cv.toFixed(4));}},grid:{color:'rgba(127,127,127,0.06)',drawTicks:false},border:{display:false},position:'left'}
+        y:{ticks:{color:axisColor(),font:{size:9},callback:function(v){const nc=(S.sp[S.sel]?.currency||'USD').toUpperCase();const def=CURRENCIES[nc]||{sym:nc+' '};return def.sym+(v>=1?v.toFixed(0):v.toFixed(4));}},grid:{color:'rgba(127,127,127,0.06)',drawTicks:false},border:{display:false},position:'left'}
       }
     },
     plugins: [{
@@ -4300,11 +4851,198 @@ function renderEd() {
       <button class="fadd" onclick="addA()"><i class="ph-thin ph-plus"></i> הוסף לרשימת המעקב</button>
     </div>
     <button class="fsave" onclick="saveClose()"><i class="ph-thin ph-floppy-disk"></i> שמור שינויים ורענן</button>
+
+    <!-- ─── Sync & Backup section ─── -->
+    <div class="sync-section">
+      <div class="sync-title">סנכרון וגיבוי</div>
+      <div class="sync-status" id="syncStatus">
+        <i class="ph-thin ph-cloud-slash"></i>
+        <span>מצב מקומי — הנתונים נשמרים רק במכשיר זה</span>
+      </div>
+      <button class="sync-btn primary" id="syncSignIn" onclick="syncSignIn()">
+        <i class="ph-thin ph-google-logo"></i> התחבר ל-Google לסנכרון בין מכשירים
+      </button>
+      <button class="sync-btn primary" id="syncSignOut" onclick="syncSignOut()" style="display:none">
+        <i class="ph-thin ph-sign-out"></i> התנתק
+      </button>
+      <div class="sync-row">
+        <button class="sync-btn" onclick="exportPortfolio()">
+          <i class="ph-thin ph-download-simple"></i> ייצא גיבוי
+        </button>
+        <button class="sync-btn" onclick="document.getElementById('importFile').click()">
+          <i class="ph-thin ph-upload-simple"></i> ייבא גיבוי
+        </button>
+        <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importPortfolio(event)">
+      </div>
+    </div>
+
     <button style="width:100%;background:transparent;border:1px solid var(--b2);border-radius:var(--radius-sm);padding:10px;color:var(--t3);font-family:var(--font-body);font-size:11px;cursor:pointer;margin-top:7px" onclick="if(confirm('לאפס את כל נתוני התיק השמורים ולחזור להגדרות ברירת המחדל?')){localStorage.removeItem('pc');localStorage.removeItem('ps');location.reload();}"><i class="ph-thin ph-arrow-counter-clockwise"></i> אפס לברירת מחדל</button>
   `;
 }
 
 function delA(i) { if (edTab==='crypto') S.crypto.splice(i,1); else S.stocks.splice(i,1); saveLS(); renderEd(); }
+
+// ── מכירה: פותח חלונית מעוצבת לבחירת כמות ──
+let _sellCtx = null; // {key, type, held, asset, unit, priceUSD}
+let _sellCur = 'ILS'; // מטבע תצוגה בחלונית המכירה
+
+function sellAsset(key, type) {
+  const isC = type === 'crypto';
+  const list = isC ? S.crypto : S.stocks;
+  const idx = isC ? list.findIndex(a => a.id === key) : list.findIndex(s => s.sym === key);
+  if (idx < 0) return;
+  const a = list[idx];
+  const held = isC ? cQty(a) : getShares(a);
+  if (!held || held <= 0) { alert(i18nGetText('אין פוזיציה למכירה')); return; }
+  const unit = isC ? a.sym : 'מניות';
+  const priceUSD = isC ? (S.cp[a.id]?.usd || 0) : (S.sp[a.sym]?.price || 0);
+
+  _sellCtx = { key, type, held, idx, unit, priceUSD, isC, sym: a.sym };
+  _sellCur = (S.currency || 'ils').toUpperCase() === 'USD' ? 'USD' : 'ILS';
+
+  document.getElementById('sellIco').innerHTML = a.icon || '';
+  document.getElementById('sellSym').textContent = a.sym;
+  document.getElementById('sellSub').textContent = a.name || '';
+  document.getElementById('sellQtyUnit').textContent = unit;
+  document.getElementById('sellHeld').textContent = i18nGetText(`מתוך ${fNum(held)} ${unit} בפוזיציה`);
+  const inp = document.getElementById('sellInput');
+  inp.max = held;
+  setSellQty(0);
+
+  document.getElementById('sellOv').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+window.sellAsset = sellAsset;
+
+function _isStock() { return _sellCtx?.type === 'stock'; }
+function _sellStep() {
+  if (_isStock()) return 1; // מניות — תמיד שלמות
+  // קריפטו: צעד לפי גודל הכמות
+  const h = _sellCtx?.held || 1;
+  if (h >= 1000) return 10;
+  if (h >= 100) return 1;
+  if (h >= 1) return 0.1;
+  return h / 100;
+}
+function _roundQ(q) {
+  if (q < 0) q = 0;
+  if (_sellCtx && q > _sellCtx.held) q = _sellCtx.held;
+  if (_isStock()) return Math.round(q); // מניות — שלמות בלבד
+  return Math.round(q * 1e6) / 1e6;
+}
+function _sellCurSym() { return _sellCur === 'USD' ? '$' : '₪'; }
+function _toSellCur(ils) {
+  // ממיר ערך ILS לכל מטבע נבחר בחלונית
+  if (_sellCur === 'USD') return ils / S.fx;
+  return ils; // ILS
+}
+function _fromSellCur(v) {
+  // ממיר ערך ממטבע נבחר → ILS
+  if (_sellCur === 'USD') return v * S.fx;
+  return v; // ILS
+}
+function _updateSellCurBtn() {
+  const btn = document.getElementById('sellCurToggle');
+  if (!btn) return;
+  btn.textContent = _sellCurSym();
+  btn.title = i18nGetText(_sellCur === 'ILS' ? 'עבור לדולר' : 'עבור לשקל');
+}
+function toggleSellCur() {
+  _sellCur = _sellCur === 'ILS' ? 'USD' : 'ILS';
+  _updateSellCurBtn();
+  // עדכן את שדה הסכום לפי הכמות הנוכחית
+  setSellQty(_sellCtx?.qty || 0);
+}
+window.toggleSellCur = toggleSellCur;
+
+let _updatingIls = false; // guard למניעת לולאה
+
+function setSellQty(q) {
+  if (!_sellCtx) return;
+  q = _roundQ(q);
+  const held = _sellCtx.held;
+  const pct = held > 0 ? (q / held) * 100 : 0;
+  document.getElementById('sellQtyNum').textContent = _isStock() ? q.toString() : fNum(q);
+  const inp = document.getElementById('sellInput');
+  inp.step = _isStock() ? '1' : 'any';
+  inp.value = q || '';
+  document.getElementById('sellSlider').value = pct;
+  // עדכון שדה תמורה (אלא אם מתעדכן מתוכו)
+  if (!_updatingIls) {
+    const ilsInp = document.getElementById('sellIlsInput');
+    _updateSellCurBtn();
+    if (ilsInp) {
+      if (_sellCtx.priceUSD && q > 0) {
+        const ils = _sellCtx.priceUSD * q * S.fx;
+        ilsInp.value = _toSellCur(ils).toFixed(2);
+      } else {
+        ilsInp.value = '';
+      }
+    }
+  }
+  const btn = document.getElementById('sellConfirm');
+  btn.disabled = !(q > 0);
+  btn.textContent = i18nGetText((q >= held - 1e-9 && held > 0) ? 'מכור את כל הפוזיציה' : 'אישור מכירה');
+  _sellCtx.qty = q;
+}
+function onSellIls(v) {
+  if (!_sellCtx || !_sellCtx.priceUSD) return;
+  const val = parseFloat(v);
+  if (!val || val <= 0) return;
+  const ils = _fromSellCur(val); // המר ממטבע נבחר → ILS
+  const qty = ils / (_sellCtx.priceUSD * S.fx);
+  _updatingIls = true;
+  setSellQty(qty);
+  _updatingIls = false;
+}
+window.onSellIls = onSellIls;
+function onSellSlider(v) { if (!_sellCtx) return; setSellQty(_sellCtx.held * (parseFloat(v) / 100)); }
+function setSellPct(p) { if (!_sellCtx) return; setSellQty(_sellCtx.held * (p / 100)); }
+function onSellInput(v) { setSellQty(parseFloat(v) || 0); }
+function bumpSell(dir) { if (!_sellCtx) return; setSellQty((_sellCtx.qty || 0) + dir * _sellStep()); }
+window.onSellSlider = onSellSlider; window.setSellPct = setSellPct;
+window.onSellInput = onSellInput; window.bumpSell = bumpSell;
+
+function closeSell() {
+  document.getElementById('sellOv').classList.remove('open');
+  document.body.style.overflow = '';
+  _sellCtx = null;
+}
+window.closeSell = closeSell;
+
+function confirmSell() {
+  if (!_sellCtx) return;
+  const { isC, idx } = _sellCtx;
+  let sold = _roundQ(_sellCtx.qty || 0);
+  const list = isC ? S.crypto : S.stocks;
+  const a = list[idx];
+  if (!a || sold <= 0) return;
+  const held = isC ? cQty(a) : getShares(a);
+  const sellAll = sold >= held - 1e-9;
+
+  if (sellAll) {
+    list.splice(idx, 1);
+  } else if (Array.isArray(a.lots) && a.lots.length) {
+    let remaining = sold;
+    for (const lot of a.lots) {
+      if (remaining <= 1e-9) break;
+      const q = parseFloat(lot.qty) || 0;
+      const take = Math.min(q, remaining);
+      lot.qty = q - take;
+      remaining -= take;
+    }
+    a.lots = a.lots.filter(l => (parseFloat(l.qty) || 0) > 1e-9);
+    if (isC) a.qty = cQty(a); else a.shares = getShares(a);
+  } else {
+    if (isC) a.qty = held - sold; else a.shares = held - sold;
+  }
+
+  saveLS();
+  closeSell();
+  closeDet();
+  doRefresh();
+}
+window.confirmSell = confirmSell;
 function moveAsset(i, dir) {
   const list = edTab === 'crypto' ? S.crypto : S.stocks;
   const j = i + dir;
@@ -4418,7 +5156,7 @@ function lotsHistoryHTML(a, currentPrice, type) {
         const lotPnl = convertFromILS(inIls, curCode);
         const lotPnlPct = p > 0 ? ((currentPrice - p) / p) * 100 : 0;
         const up = lotPnl >= 0;
-        const dateStr = l.date ? new Date(l.date).toLocaleDateString('he-IL', {day:'numeric', month:'short', year:'numeric'}) : '--';
+        const dateStr = l.date ? fDate(new Date(l.date), { year: 'numeric' }) : '--';
         return `
           <div class="lot-card">
             <div class="lot-card-cell"><div class="lc-l">תאריך</div><div class="lc-v" style="font-size:11px">${dateStr}</div></div>
@@ -4519,6 +5257,13 @@ function addA() {
   saveLS();
   renderEd();
   launchConfetti();
+  // Immediately fetch the new asset's data so the card stops shimmering once data arrives.
+  // (The full doRefresh runs on save; this gives the shimmer a quick exit before then.)
+  if (edTab === 'crypto') {
+    getCrypto().then(() => { renderDashCrypto(); if (S.curPage === 'crypto') renderCryptoPage(); });
+  } else {
+    getStocks().then(() => { renderDashStocks(); if (S.curPage === 'stocks') renderStocksPage(); });
+  }
 }
 
 function saveClose() { saveLS(); S.sparks = {}; S.sChg = {}; S.cChg = {}; closeEd(); doRefresh(); }
@@ -4612,21 +5357,22 @@ async function renderDashPeriod(period, customFrom, customTo) {
 // ═══════════════════════════════════════════
 async function doRefresh() {
   const btn = document.getElementById('refreshBtn');
+  const overlay = document.getElementById('refreshOverlay');
   if (btn) btn.classList.add('spin');
+  if (overlay) overlay.classList.add('show');
   try {
-    await getFX();
-    await Promise.allSettled([getCrypto(), getStocks()]);
+    await Promise.allSettled([getFX(), getCrypto(), getStocks()]);
     renderDashCrypto(); renderDashStocks(); updateKPIs();
     if (S.curPage === 'stocks')   renderStocksPage();
     if (S.curPage === 'crypto')   renderCryptoPage();
     if (S.curPage === 'insights') renderInsights();
-    setTimeout(() => { renderDashCrypto(); renderDashStocks(); updateKPIs(); }, 2500);
     updateClocks();
     updateDailyDate();
   } catch (e) {
     console.error('Refresh failed:', e);
   } finally {
     if (btn) btn.classList.remove('spin');
+    if (overlay) overlay.classList.remove('show');
   }
 }
 
@@ -4645,7 +5391,7 @@ function updateDailyDate() {
   const el = document.getElementById('dailyDate');
   if (!el) return;
   const isEn = document.documentElement.lang === 'en' || document.documentElement.dir === 'ltr';
-  el.textContent = isEn ? todayEnLabel() : todayHeLabel();
+  el.textContent = fDate(new Date());
 }
 updateDailyDate();
 setInterval(updateDailyDate, 5 * 60 * 1000);
@@ -4708,6 +5454,115 @@ window.proceedToApp = async function() {
 
 function skipAuth() {
   if (confirm('מעבר למצב Offline ללא סנכרון מאובטח, להמשיך?')) window.proceedToApp();
+}
+
+// ═══════════════════════════════════════════
+// SYNC & BACKUP — Google auth + JSON export/import
+// ═══════════════════════════════════════════
+async function syncSignIn() {
+  if (typeof window.fbApp === 'undefined' && typeof window.signInWithPopup === 'undefined') {
+    alert('הסנכרון דורש Firebase. ודאי שאת מחוברת לאינטרנט והאפליקציה רצה מ-HTTPS (לא file://). העלי ל-GitHub Pages לחווית הסנכרון המלאה.');
+    return;
+  }
+  try {
+    // Reuse the same auth flow as the lock screen
+    const btn = document.querySelector('.lock-btn');
+    if (btn) {
+      closeEd();
+      btn.click();   // triggers existing Google sign-in flow
+      return;
+    }
+    alert('שגיאת התחברות. נסי לטעון מחדש.');
+  } catch (e) {
+    console.warn('Sign-in error:', e);
+    alert('התחברות נכשלה: ' + (e?.message || 'נסי שוב'));
+  }
+}
+
+async function syncSignOut() {
+  if (!confirm('להתנתק מ-Google? הנתונים יישארו מקומית.')) return;
+  if (window.fbSignOut) await window.fbSignOut();
+  location.reload();
+}
+
+function syncStatusRefresh() {
+  const isAuth = !!(window.firebaseUser);
+  const status = document.getElementById('syncStatus');
+  const signInBtn = document.getElementById('syncSignIn');
+  const signOutBtn = document.getElementById('syncSignOut');
+  if (!status) return;
+  if (isAuth) {
+    status.classList.add('connected');
+    status.innerHTML = `<i class="ph-thin ph-cloud-check"></i><span>מחובר/ת: ${window.firebaseUser.email || window.firebaseUser.uid}</span>`;
+    if (signInBtn) signInBtn.style.display = 'none';
+    if (signOutBtn) signOutBtn.style.display = '';
+  } else {
+    status.classList.remove('connected');
+    status.innerHTML = '<i class="ph-thin ph-cloud-slash"></i><span>מצב מקומי — הנתונים נשמרים רק במכשיר זה</span>';
+    if (signInBtn) signInBtn.style.display = '';
+    if (signOutBtn) signOutBtn.style.display = 'none';
+  }
+}
+
+function exportPortfolio() {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    portfolio: {
+      crypto: S.crypto,
+      stocks: S.stocks,
+      currency: S.currency,
+      fx: S.fx,
+    },
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `vector-portfolio-backup-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function importPortfolio(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const p = data.portfolio || data;
+    if (!p.crypto && !p.stocks) {
+      alert('הקובץ לא מכיל נתוני תיק תקינים.');
+      return;
+    }
+    if (!confirm(`לטעון גיבוי?\n\n• ${p.crypto?.length || 0} מטבעות\n• ${p.stocks?.length || 0} מניות\n\nהנתונים הקיימים יוחלפו.`)) return;
+    if (p.crypto?.length) S.crypto = p.crypto;
+    if (p.stocks?.length) S.stocks = normalizeStocks(p.stocks);
+    if (p.currency) S.currency = p.currency;
+    if (p.fx)       S.fx = p.fx;
+    fixIcons(S.crypto, 'crypto'); fixIcons(S.stocks, 'stock');
+    saveLS();
+    if (window.fbSave) window.fbSave({ crypto: S.crypto, stocks: S.stocks, updatedAt: Date.now() });
+    alert('הגיבוי נטען בהצלחה! 🎉');
+    location.reload();
+  } catch (e) {
+    alert('שגיאה בקריאת הקובץ: ' + e.message);
+  } finally {
+    event.target.value = '';   // allow re-importing the same file
+  }
+}
+
+// Refresh the sync status whenever the editor opens
+const _origOpenEd = window.openEd;
+if (_origOpenEd) {
+  window.openEd = function(...args) {
+    const r = _origOpenEd.apply(this, args);
+    setTimeout(syncStatusRefresh, 50);
+    return r;
+  };
 }
 
 // ═══════════════════════════════════════════
