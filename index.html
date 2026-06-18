@@ -5085,7 +5085,7 @@ let _shotPreview = null; // base64 preview
 
 // Embedded Gemini API key — free tier (1,500 requests/day shared across all users).
 // Get yours at https://aistudio.google.com/apikey and paste below.
-const GEMINI_KEY = 'PASTE_YOUR_GEMINI_KEY_HERE';
+const GEMINI_KEY = 'AQ.Ab8RN6IpB8xkRCFNCKGUgg8Rh1HQo3LeHJUMfpFdPdqtGGt4Tw';
 
 async function onShotUpload(ev) {
   const file = ev.target.files?.[0];
@@ -5146,16 +5146,20 @@ Rules:
     generationConfig: { temperature: 0, responseMimeType: 'application/json' }
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`;
   const resp = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': GEMINI_KEY,
+    },
     body: JSON.stringify(body),
   });
 
   if (!resp.ok) {
     const t = await resp.text();
     if (resp.status === 400 && t.includes('API_KEY')) throw new Error('מפתח הזיהוי לא הוגדר נכון. פני למפתח/ת האפליקציה.');
+    if (resp.status === 401) throw new Error('מפתח הזיהוי לא תקף. פני למפתח/ת האפליקציה.');
     if (resp.status === 429) throw new Error('המכסה היומית של הזיהוי האוטומטי נגמרה — נסי שוב מחר.');
     if (resp.status === 403) throw new Error('הזיהוי האוטומטי אינו זמין כרגע (בעיית הרשאות).');
     throw new Error(`שגיאת זיהוי (${resp.status})`);
