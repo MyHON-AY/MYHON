@@ -22,6 +22,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Manrope:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-thin-rounded/css/uicons-thin-rounded.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/thin/style.css">
+<script>
+// ── Safe storage shim: file:// and private modes block localStorage (opaque origin).
+// Without this, the very first localStorage call throws and halts the whole script.
+(function(){
+  function makeMemStore(){
+    let m = {};
+    return {
+      getItem: k => (k in m ? m[k] : null),
+      setItem: (k,v) => { m[k] = String(v); },
+      removeItem: k => { delete m[k]; },
+      clear: () => { m = {}; },
+      key: i => Object.keys(m)[i] ?? null,
+      get length(){ return Object.keys(m).length; }
+    };
+  }
+  function test(store){
+    try { const t='__t'+Math.random(); store.setItem(t,'1'); store.removeItem(t); return true; }
+    catch(_) { return false; }
+  }
+  try {
+    if (!window.localStorage || !test(window.localStorage)) {
+      Object.defineProperty(window, 'localStorage', { value: makeMemStore(), configurable: true });
+    }
+  } catch(_) {
+    try { Object.defineProperty(window, 'localStorage', { value: makeMemStore(), configurable: true }); } catch(__){}
+  }
+  try {
+    if (!window.sessionStorage || !test(window.sessionStorage)) {
+      Object.defineProperty(window, 'sessionStorage', { value: makeMemStore(), configurable: true });
+    }
+  } catch(_) {
+    try { Object.defineProperty(window, 'sessionStorage', { value: makeMemStore(), configurable: true }); } catch(__){}
+  }
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 /* ════════════════════════════════════════════════════════════════
@@ -1016,6 +1051,20 @@ body.light .review-row { background: rgba(10,15,31,0.05) !important; }
 .review-err { color: var(--rd); font-size: 12px; padding: 10px; background: color-mix(in srgb, var(--rd) 8%, transparent); border-radius: 8px; margin: 10px 0; }
 .review-row-head { font-size: 9px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .5px; padding: 0 10px; margin-bottom: 4px; display: grid; grid-template-columns: 28px 1fr 80px 90px 70px 24px; gap: 8px; }
 #reviewOv { align-items: center; justify-content: center; z-index: 300; }
+
+/* ── API key setup modal ── */
+.key-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.key-step { display: flex; gap: 12px; align-items: flex-start; }
+.key-step-n { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: var(--ac); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+.key-step-body { flex: 1; min-width: 0; }
+.key-step-t { font-size: 13px; color: var(--t1); font-weight: 600; margin-bottom: 5px; }
+.key-step-d { font-size: 11px; color: var(--t3); line-height: 1.5; }
+.key-step-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ac); text-decoration: none; padding: 6px 10px; background: color-mix(in srgb, var(--ac) 12%, transparent); border-radius: 8px; font-weight: 600; transition: background .12s; }
+.key-step-link:hover { background: color-mix(in srgb, var(--ac) 20%, transparent); }
+.key-step-link i { font-size: 14px; }
+.key-input { width: 100%; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--b1); background: var(--bg); color: var(--t1); font-family: var(--font-mono); font-size: 12px; outline: none; box-sizing: border-box; margin-top: 6px; }
+.key-input:focus { border-color: var(--ac); }
+.key-foot { font-size: 10.5px; color: var(--t3); padding: 10px; background: color-mix(in srgb, var(--gr) 6%, transparent); border-radius: 8px; line-height: 1.5; text-align: center; margin-bottom: 12px; }
 
 .mh { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .mico { width: 46px; height: 46px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 21px; background: var(--s3); border: 1px solid var(--b1); }
@@ -5037,23 +5086,70 @@ let _shotPreview = null; // base64 preview
 function _aKey() {
   return localStorage.getItem('anthropic_api_key') || '';
 }
-function _setAKey() {
+
+// One-time UX: pretty modal instead of browser prompt
+function _showKeyModal(returnToUpload = false) {
   const cur = _aKey();
-  const k = prompt(
-    'לזיהוי אוטומטי דרוש מפתח API של Anthropic (Claude).\n\n' +
-    '1. כנסי ל-console.anthropic.com\n' +
-    '2. צרי מפתח API חדש\n' +
-    '3. הדביקי כאן\n\n' +
-    'המפתח נשמר רק בדפדפן שלך (localStorage) ולא נשלח לאף שרת חוץ מ-Anthropic.',
-    cur
-  );
-  if (k === null) return false;
-  const trimmed = k.trim();
-  if (!trimmed) { localStorage.removeItem('anthropic_api_key'); return false; }
-  if (!trimmed.startsWith('sk-ant-')) { alert('מפתח לא תקין — חייב להתחיל ב-sk-ant-'); return false; }
-  localStorage.setItem('anthropic_api_key', trimmed);
-  return true;
+  document.getElementById('reviewModal').innerHTML = `
+    <div class="review-head"><i class="ph-thin ph-key"></i><div class="review-title">הגדרת זיהוי אוטומטי</div></div>
+    <div class="review-sub" style="line-height:1.6">
+      כדי לזהות נכסים מצילומי מסך, האפליקציה משתמשת ב-<b>Claude AI</b> של Anthropic.<br>
+      זוהי הגדרה <b>חד-פעמית</b> — אחריה תוכלי להעלות תמונות בלחיצה אחת.
+    </div>
+    <div class="key-steps">
+      <div class="key-step">
+        <div class="key-step-n">1</div>
+        <div class="key-step-body">
+          <div class="key-step-t">צרי חשבון חינמי באנת'רופיק</div>
+          <a class="key-step-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">
+            <i class="ph-thin ph-arrow-square-out"></i> פתחי console.anthropic.com
+          </a>
+        </div>
+      </div>
+      <div class="key-step">
+        <div class="key-step-n">2</div>
+        <div class="key-step-body">
+          <div class="key-step-t">לחצי "Create Key" וצרי מפתח חדש</div>
+          <div class="key-step-d">חשבון חדש מקבל $5 קרדיט חינמי לבדיקות. אחרי זה — סנט בודד לתמונה.</div>
+        </div>
+      </div>
+      <div class="key-step">
+        <div class="key-step-n">3</div>
+        <div class="key-step-body">
+          <div class="key-step-t">העתיקי את המפתח (מתחיל ב-sk-ant-) והדביקי כאן:</div>
+          <input type="password" id="apiKeyInp" class="key-input" placeholder="sk-ant-api03-..." dir="ltr" value="${cur}">
+        </div>
+      </div>
+    </div>
+    <div class="key-foot">🔒 המפתח נשמר רק בדפדפן הזה ולא נשלח לאף מקום חוץ מ-Anthropic.</div>
+    <div class="review-err" id="keyErr" style="display:none"></div>
+    <div class="review-actions">
+      <button class="review-cancel" onclick="closeReview()">ביטול</button>
+      <button class="review-confirm" onclick="_saveApiKey(${returnToUpload})">שמירת מפתח</button>
+    </div>
+  `;
+  openReview();
+  setTimeout(() => document.getElementById('apiKeyInp')?.focus(), 100);
 }
+window._showKeyModal = _showKeyModal;
+
+function _saveApiKey(returnToUpload) {
+  const inp = document.getElementById('apiKeyInp');
+  const err = document.getElementById('keyErr');
+  const k = (inp?.value || '').trim();
+  if (!k) { err.style.display='block'; err.textContent = 'יש להדביק את המפתח'; return; }
+  if (!k.startsWith('sk-ant-')) { err.style.display='block'; err.textContent = 'מפתח לא תקין — חייב להתחיל ב-sk-ant-'; return; }
+  localStorage.setItem('anthropic_api_key', k);
+  err.style.display='none';
+  if (returnToUpload) {
+    // re-trigger upload flow
+    closeReview();
+    setTimeout(() => document.getElementById('shotInp')?.click(), 200);
+  } else {
+    closeReview();
+  }
+}
+window._saveApiKey = _saveApiKey;
 
 async function onShotUpload(ev) {
   const file = ev.target.files?.[0];
@@ -5062,8 +5158,8 @@ async function onShotUpload(ev) {
   if (!file.type.startsWith('image/')) { alert('יש לבחור קובץ תמונה'); return; }
   if (file.size > 8 * 1024 * 1024) { alert('התמונה גדולה מדי (מקסימום 8MB)'); return; }
 
-  // ensure API key
-  if (!_aKey() && !_setAKey()) return;
+  // ensure API key — show pretty modal if missing
+  if (!_aKey()) { _showKeyModal(true); return; }
 
   // open review modal with loading state
   _shotPreview = await _fileToBase64(file);
@@ -5184,7 +5280,7 @@ function _renderReviewError(msg) {
     <div class="review-err">${msg}</div>
     <div class="review-actions">
       <button class="review-cancel" onclick="closeReview()">סגירה</button>
-      <button class="review-confirm" onclick="_setAKey()">עדכון מפתח</button>
+      <button class="review-confirm" onclick="_showKeyModal(false)">עדכון מפתח</button>
     </div>
   `;
 }
@@ -5267,8 +5363,7 @@ function confirmAddParsed() {
   renderEd();
   doRefresh();
 }
-window.confirmAddParsed = window.confirmAddParsed = confirmAddParsed;
-window._setAKey = _setAKey;
+window.confirmAddParsed = confirmAddParsed;
 
 // ── מכירה: פותח חלונית מעוצבת לבחירת כמות ──
 let _sellCtx = null; // {key, type, held, asset, unit, priceUSD}
