@@ -1977,9 +1977,25 @@ window.doGoogleLogin = async () => {
     }
   } catch(e) {
     lbl.textContent = mode === 'signup' ? 'הרשמה עם Google' : 'היכנס באמצעות Google';
-    err.textContent = e.code === 'auth/popup-closed-by-user' ? 'החלון נסגר — נסה שוב' : 'שגיאה: ' + e.message;
+    err.textContent = googleAuthErrorMessage(e);
   }
 };
+// Translate common Firebase Auth error codes into clear, actionable Hebrew
+// messages — especially auth/unauthorized-domain, which is by far the most
+// common reason Google sign-in works on localhost but fails once the site is
+// hosted somewhere else (like GitHub Pages): the hosting domain needs to be
+// added to the Firebase project's Authorized domains list.
+function googleAuthErrorMessage(e) {
+  const code = e?.code || '';
+  if (code === 'auth/popup-closed-by-user') return 'החלון נסגר — נסה שוב';
+  if (code === 'auth/unauthorized-domain') {
+    return `הדומיין ${location.hostname} אינו מאושר בפיירבייס. הוסיפי אותו ב-Firebase Console → Authentication → Settings → Authorized domains.`;
+  }
+  if (code === 'auth/operation-not-allowed') return 'התחברות עם Google אינה מופעלת בפרויקט. הפעילי אותה ב-Firebase Console → Authentication → Sign-in method.';
+  if (code === 'auth/network-request-failed') return 'בעיית רשת — בדקי את החיבור לאינטרנט ונסי שוב.';
+  if (code === 'auth/popup-blocked') return 'הדפדפן חסם את חלון ההתחברות — אפשרי חלונות קופצים ונסי שוב.';
+  return 'שגיאה: ' + (e?.message || code || 'לא ידועה') + (code ? ` (${code})` : '');
+}
 
 window.checkAuthAndShow = () => {
   const user = auth.currentUser;
@@ -2079,6 +2095,11 @@ getRedirectResult(auth).then(async result => {
 }).catch(error => {
   localStorage.removeItem('google_pending_redirect');
   console.warn('Google redirect result failed:', error);
+  // Show the error on screen too (not just the console) — this path runs on
+  // iOS, where signInWithRedirect previously failed completely silently from
+  // the user's point of view.
+  const err = document.getElementById('lockErr');
+  if (err && typeof googleAuthErrorMessage === 'function') err.textContent = googleAuthErrorMessage(error);
 });
 
 onAuthStateChanged(auth, async user => {
