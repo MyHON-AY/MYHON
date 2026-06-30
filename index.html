@@ -2100,6 +2100,31 @@ onAuthStateChanged(auth, async user => {
 });
 </script>
 
+<script>
+// Safety net: the Google sign-in button only becomes visible once Firebase's
+// onAuthStateChanged listener fires (inside the module script above). On some
+// networks (slow connections, ad-blockers, or restrictive firewalls — common
+// when the site is served from GitHub Pages) the Firebase SDK can fail to
+// load or that listener can be delayed indefinitely, leaving the button stuck
+// hidden with no way for the person to know why. If that hasn't resolved
+// within a few seconds, reveal the button anyway whenever the underlying
+// Firebase auth object did load (so the click will actually work); otherwise
+// leave it hidden rather than show a button that would just error out.
+(function () {
+  function revealGoogleButtonIfStuck() {
+    if (window.firebaseReady) return;   // normal path already handled it
+    var btn = document.getElementById('googleBtn');
+    if (btn && window.firebaseAuth) {
+      btn.style.display = 'flex';
+      console.warn('[Auth] Firebase took too long to report ready state — showing Google sign-in anyway.');
+    } else if (btn) {
+      console.warn('[Auth] Firebase SDK failed to load — Google sign-in unavailable. Email/password and local mode still work.');
+    }
+  }
+  setTimeout(revealGoogleButtonIfStuck, 4000);
+})();
+</script>
+
 <div id="lockScreen">
   <div class="lock-card">
     <div class="lock-logo" id="lockMark">V·</div>
