@@ -1599,11 +1599,11 @@ td { font-size: 11px; color: var(--t1); border-bottom: 1px solid var(--b1); }
     <div class="tb-extras" id="tbExtras">
       <div class="live"><div class="dot"></div>LIVE</div>
       <div style="display:flex;align-items:center;gap:4px;background:var(--s1);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:3px 8px;">
-        <span style="font-size:9px;color:var(--gd);font-weight:700;font-family:var(--font-mono);">ILS</span>
+        <span id="fxPillLabel" style="font-size:9px;color:var(--gd);font-weight:700;font-family:var(--font-mono);">ILS</span>
         <input id="fxInput" type="number" step="0.001" min="2" max="6"
           style="width:42px;background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--font-mono);font-size:11px;font-weight:700;"
-          onchange="S.fx=parseFloat(this.value)||S.fx;updateFxKpi();renderDashCrypto();renderDashStocks();updateKPIs();"
-          title="שער דולר — ניתן לעריכה ידנית">
+          onchange="S.fx=parseFloat(this.value)||S.fx;updateFxKpi();updateTopbarFxPill();renderDashCrypto();renderDashStocks();updateKPIs();"
+          title="שער דולר מול המטבע הנבחר — ניתן לעריכה ידנית עבור שקל">
       </div>
       <button class="ibtn" id="fxConvBtn" onclick="toggleFxConv()" title="מחשבון מט&quot;ח"><i class="fi fi-tr-calculator" style="font-size:15px"></i></button>
       <div class="picker-host" id="currHost">
@@ -2617,8 +2617,7 @@ async function getFX() {
     } catch(_) {}
   }
   updateFxKpi();
-  const fxInput = document.getElementById('fxInput');
-  if (fxInput) fxInput.value = S.fx.toFixed(3);
+  updateTopbarFxPill();
 }
 
 async function getCrypto() {
@@ -3753,22 +3752,48 @@ function convertFromILS(n, cur) {
 }
 // Update the "שער דולר" KPI to reflect the active currency:
 // shows how much 1 USD costs in the chosen display currency.
+// Returns the live "USD priced in X" rate, where X is the active display
+// currency. If the active currency IS USD, falls back to EUR (USD/USD is
+// always 1 and tells the user nothing) so the indicator stays meaningful.
+function dollarRateInfo() {
+  let cur = (S.currency || 'ils').toUpperCase();
+  if (cur === 'USD') cur = 'EUR';
+  const def = CURRENCIES[cur] || CURRENCIES.ILS;
+  let rate;     // how much 1 USD costs in `cur`
+  if (cur === 'ILS') rate = S.fx;
+  else {
+    const r = (typeof fxConvRates !== 'undefined') ? fxConvRates[cur] : null;
+    rate = (r && r > 0) ? (1 / r) : null;
+  }
+  return { code: cur, sym: def.sym, rate };
+}
 function updateFxKpi() {
   const el = document.getElementById('fxKpi');
   const sub = document.getElementById('fxKpiSub');
   if (!el) return;
-  const cur = (S.currency || 'ils').toUpperCase();
-  const def = CURRENCIES[cur] || CURRENCIES.ILS;
-  let rate;     // how much 1 USD costs in the chosen currency
-  if (cur === 'USD') rate = 1;
-  else if (cur === 'ILS') rate = S.fx;
-  else {
-    // fxConvRates[X] = USD value of 1 unit of X → rate(X per USD) = 1/fxConvRates[X]
-    const r = (typeof fxConvRates !== 'undefined') ? fxConvRates[cur] : null;
-    rate = (r && r > 0) ? (1 / r) : null;
+  const { code, sym, rate } = dollarRateInfo();
+  el.textContent = rate != null ? sym + rate.toFixed(rate < 10 ? 3 : 2) : '---';
+  if (sub) sub.textContent = `USD/${code} רציף`;
+}
+// Topbar pill: shows the live USD rate against the active display currency
+// (EUR instead when the active currency IS USD). Stays editable only for ILS,
+// since S.fx is the app's core USD→ILS bridge rate; other currencies are
+// shown read-only (editing them isn't wired into the conversion model).
+function updateTopbarFxPill() {
+  const label = document.getElementById('fxPillLabel');
+  const input = document.getElementById('fxInput');
+  if (!label || !input) return;
+  const { code, rate } = dollarRateInfo();
+  label.textContent = code;
+  if (code === 'ILS') {
+    input.value = S.fx.toFixed(3);
+    input.readOnly = false;
+    input.style.opacity = '';
+  } else {
+    input.value = rate != null ? rate.toFixed(rate < 10 ? 3 : 2) : '---';
+    input.readOnly = true;
+    input.style.opacity = '0.75';
   }
-  el.textContent = rate != null ? def.sym + rate.toFixed(rate < 10 ? 3 : 2) : '---';
-  if (sub) sub.textContent = `USD/${cur} רציף`;
 }
 
 // Format a price in the asset's native exchange currency (USD for NASDAQ, ILS for TASE, etc.)
@@ -3903,6 +3928,7 @@ function setCurrency(cur, fromLang = false) {
   // Make sure rates are fresh, then re-render
   (typeof fxConvLoadRates === 'function' ? fxConvLoadRates() : Promise.resolve()).then(() => {
     updateFxKpi();
+    updateTopbarFxPill();
     renderDashCrypto(); renderDashStocks(); updateKPIs();
     // Re-render the dashboard period summary so its P&L values follow the new currency.
     if (S.curPage === 'dash' && typeof renderDashPeriod === 'function') {
