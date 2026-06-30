@@ -290,6 +290,7 @@ body.light .card-loading::after {
 .an-title { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--t1); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .an-meta { display: flex; align-items: center; gap: 7px; margin-top: 8px; font-size: 11px; color: var(--t3); flex-wrap: wrap; }
 .an-tag { font-family: var(--font-mono); font-weight: 700; font-size: 10px; color: var(--ac); background: color-mix(in srgb, var(--ac) 12%, transparent); border: 1px solid color-mix(in srgb, var(--ac) 25%, transparent); padding: 1px 7px; border-radius: 100px; }
+.an-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .an-dot { opacity: .5; }
 .an-ad { position: sticky; top: 12px; }
 .an-ad-slot { width: 100%; min-height: 600px; border: 1px dashed var(--b2); border-radius: var(--radius); background: color-mix(in srgb, var(--s2) 50%, transparent); display: flex; align-items: center; justify-content: center; color: var(--t3); font-size: 11px; letter-spacing: .5px; }
@@ -1286,6 +1287,11 @@ body.light .rb.active { background: #fff; color: var(--ac); box-shadow: 0 1px 6p
 
 .aform { background: var(--s3); border: 1px solid var(--b1); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; }
 .af-t { font-size: 10px; color: var(--t3); font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+.af-t-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.af-t-row .af-t { margin-bottom: 0; }
+.af-reset { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: 1px solid var(--b1); border-radius: 100px; padding: 4px 10px; color: var(--t3); font-family: var(--font-body); font-size: 10.5px; font-weight: 600; cursor: pointer; transition: border-color .12s, color .12s; }
+.af-reset:hover { border-color: var(--ac); color: var(--t1); }
+.af-reset i { font-size: 12px; }
 .fg { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; min-width: 0; }
 @media(max-width:560px){ .fg { grid-template-columns: 1fr; } }
 .ff { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -1575,7 +1581,6 @@ td { font-size: 11px; color: var(--t1); border-bottom: 1px solid var(--b1); }
     <button class="nit" id="navCommodities" data-p="commodities" onclick="goPage('commodities',this)" style="display:none">סחורות</button>
     <button class="nit" id="navBonds" data-p="bonds" onclick="goPage('bonds',this)" style="display:none">אג"ח</button>
     <button class="nit" id="navEtfs" data-p="etfs" onclick="goPage('etfs',this)" style="display:none">תעודות סל</button>
-    <button class="nit" data-p="news" onclick="goPage('news',this)">חדשות</button>
     <button class="nit" data-p="insights" onclick="goPage('insights',this)">תובנות</button>
   </nav>
 <div class="topbar">
@@ -2238,7 +2243,8 @@ onAuthStateChanged(auth, async user => {
     <div class="sec" id="secEtfs"><div class="sec-t"><i></i>תעודות סל</div><button class="add-b" onclick="openEditor('etfs')"><i class="ph-thin ph-plus-circle ph-sm"></i> הוסף נכס</button></div>
     <div class="grid" id="dEtfsGrid"></div>
 
-    <div class="sec" style="margin-top:14px"><div class="sec-t"><i class="ph-thin ph-newspaper" style="margin-inline-end:8px"></i>כתבות על הנכסים שלי</div></div>
+    <div class="sec" style="margin-top:14px"><div class="sec-t"><i></i>כתבות על הנכסים שלי</div></div>
+    <div class="an-filter" id="anFilter"></div>
     <div id="assetNews" class="asset-news"></div>
   </div>
 
@@ -2301,19 +2307,6 @@ onAuthStateChanged(auth, async user => {
 
 </div>
 
-  <div class="page" id="page-news">
-    <div class="sec" style="margin-top:2px"><div class="sec-t"><i class="fi fi-tr-newspaper" style="margin-left:8px"></i>חדשות</div></div>
-    <div class="news-subtabs" id="newsSubtabs">
-      <button class="news-subtab active" id="newsTabWorld" onclick="setNewsTab('world')">חדשות מהעולם</button>
-      <button class="news-subtab" id="newsTabMine" onclick="setNewsTab('mine')">נכסים שלי</button>
-    </div>
-    <div class="news-filters" id="newsFilters"></div>
-    <div id="newsContent"><div class="news-list">
-      <div class="news-skel"></div><div class="news-skel"></div><div class="news-skel"></div>
-      <div class="news-skel"></div><div class="news-skel"></div><div class="news-skel"></div>
-    </div></div>
-  </div>
-
   <div class="page" id="page-commodities">
     <div class="sec" style="margin-top:2px"><div class="sec-t"><i></i>סחורות</div><button class="add-b" onclick="openEditor('commodities')"><i class="ph-thin ph-plus-circle ph-sm"></i> הוסף נכס</button></div>
     <div class="grid" id="commoditiesPageGrid"></div>
@@ -2333,7 +2326,6 @@ onAuthStateChanged(auth, async user => {
   <button class="ni active" data-p="dash" onclick="goPage('dash',this)"><span class="ni-ico"><i class="ph-thin ph-house"></i></span><span class="ni-lbl">דשבורד</span></button>
   <button class="ni" data-p="stocks" onclick="goPage('stocks',this)"><span class="ni-ico"><i class="ph-thin ph-chart-line-up"></i></span><span class="ni-lbl">מניות</span></button>
   <button class="ni" data-p="crypto" onclick="goPage('crypto',this)"><span class="ni-ico"><i class="ph-thin ph-coins"></i></span><span class="ni-lbl">קריפטו</span></button>
-  <button class="ni" data-p="news" onclick="goPage('news',this)"><span class="ni-ico"><i class="fi fi-tr-newspaper" style="font-size:18px"></i></span><span class="ni-lbl">חדשות</span></button>
   <button class="ni" data-p="insights" onclick="goPage('insights',this)"><span class="ni-ico"><i class="ph-thin ph-lightbulb"></i></span><span class="ni-lbl">תובנות</span></button>
 </nav>
 
@@ -4253,6 +4245,13 @@ const I18N = {
   // ── Unsaved-changes prompt ──
   'יש שינויים שלא נשמרו — לשמור אותם?':'You have unsaved changes — save them?',
 
+  // ── Asset-news filter strings ──
+  'אין כתבות זמינות עבור הסינון הנוכחי.':'No articles available for this filter.',
+
+  // ── Add-asset form reset strings ──
+  'איפוס':'Reset',
+  'איפוס שדות':'Reset fields',
+
 };
 const I18N_KEYS = Object.keys(I18N).sort((a, b) => b.length - a.length);
 const HEB_RE = /[\u0590-\u05FF]/;
@@ -4888,6 +4887,11 @@ const LANG_DICTS = {
     'שמור וסגור':'Сохранить и закрыть',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'Есть несохранённые изменения — сохранить?',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'Нет статей по этому фильтру.',
+      // ── Add-asset form reset strings ──
+    'איפוס':'Сброс',
+    'איפוס שדות':'Сбросить поля',
   },
   es: {
     'שוק אמריקאי':'Mercado de EE. UU.',
@@ -5350,6 +5354,11 @@ const LANG_DICTS = {
     'שמור וסגור':'Guardar y cerrar',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'Tienes cambios sin guardar, ¿guardarlos?',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'No hay artículos disponibles para este filtro.',
+      // ── Add-asset form reset strings ──
+    'איפוס':'Restablecer',
+    'איפוס שדות':'Restablecer campos',
   },
   fr: {
     'שוק אמריקאי':'Marché américain',
@@ -5812,6 +5821,11 @@ const LANG_DICTS = {
     'שמור וסגור':'Enregistrer et fermer',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'Des modifications non enregistrées — les enregistrer ?',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'Aucun article disponible pour ce filtre.',
+      // ── Add-asset form reset strings ──
+    'איפוס':'Réinitialiser',
+    'איפוס שדות':'Réinitialiser les champs',
   },
   ar: {
     'שוק אמריקאי':'السوق الأمريكي',
@@ -6274,6 +6288,11 @@ const LANG_DICTS = {
     'שמור וסגור':'حفظ وإغلاق',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'لديك تغييرات غير محفوظة — هل تحفظها؟',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'لا توجد مقالات متاحة لهذا الفلتر.',
+      // ── Add-asset form reset strings ──
+    'איפוס':'إعادة تعيين',
+    'איפוס שדות':'إعادة تعيين الحقول',
   },
   de: {
     'שוק אמריקאי':'US-Markt',
@@ -6736,6 +6755,11 @@ const LANG_DICTS = {
     'שמור וסגור':'Speichern & schließen',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'Ungespeicherte Änderungen — speichern?',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'Keine Artikel für diesen Filter verfügbar.',
+      // ── Add-asset form reset strings ──
+    'איפוס':'Zurücksetzen',
+    'איפוס שדות':'Felder zurücksetzen',
   },
   zh: {
     'שוק אמריקאי':'美国市场',
@@ -7198,6 +7222,11 @@ const LANG_DICTS = {
     'שמור וסגור':'保存并关闭',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'有未保存的更改——要保存吗？',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'没有符合此筛选条件的文章。',
+      // ── Add-asset form reset strings ──
+    'איפוס':'重置',
+    'איפוס שדות':'重置字段',
   },
   nl: {
     'שוק אמריקאי':'Amerikaanse markt',
@@ -7660,6 +7689,11 @@ const LANG_DICTS = {
     'שמור וסגור':'Opslaan & sluiten',
       // ── Unsaved-changes prompt ──
     'יש שינויים שלא נשמרו — לשמור אותם?':'Niet-opgeslagen wijzigingen — opslaan?',
+      // ── Asset-news filter strings ──
+    'אין כתבות זמינות עבור הסינון הנוכחי.':'Geen artikelen beschikbaar voor dit filter.',
+      // ── Add-asset form reset strings ──
+    'איפוס':'Reset',
+    'איפוס שדות':'Velden resetten',
   },
 };
 
@@ -8103,7 +8137,6 @@ function goPage(id, btn) {
   if (id === 'stocks')   renderStocksPage();
   if (id === 'crypto')   renderCryptoPage();
   if (id === 'insights') { renderInsights(); buildHistoryTable(); }
-  if (id === 'news') { renderNews(); }
   if (id === 'commodities' || id === 'bonds' || id === 'etfs') renderManualPage(id);
 }
 
@@ -8769,57 +8802,8 @@ async function renderCryptoPage() {
 // ═══════════════════════════════════════════
 // NEWS — resilient RSS headlines + portfolio-specific news
 // ═══════════════════════════════════════════
-let newsTab = 'world';
-let newsCategory = 'all';                 // selected world category
-let newsAssetFilter = null;               // selected symbol in 'mine' view
-let newsPage = 1;                         // 1-indexed
-const NEWS_PAGE_SIZE = 12;
 const newsCache = { world: null, mine: null, worldByCat: {}, _displayed: [] };
 let newsLastFetch = { world: 0, mine: 0 };
-
-// Yahoo Finance-style categories — each maps to Google News RSS queries
-const NEWS_CATEGORIES = [
-  { key: 'all',      label: 'הכל',        icon: 'newspaper',     queries: null },     // null = use existing NEWS_WORLD_FEEDS
-  { key: 'markets',  label: 'שווקים',     icon: 'chart-line-up', queries: ['stock market today when:5d', 'S&P 500 when:5d', 'Dow Jones Nasdaq when:5d'] },
-  { key: 'crypto',   label: 'קריפטו',     icon: 'coins',         queries: ['cryptocurrency news when:5d', 'Bitcoin price when:5d', 'Ethereum crypto when:5d'] },
-  { key: 'earnings', label: 'דוחות',      icon: 'calendar-days', queries: ['earnings report when:5d', 'quarterly earnings when:5d', 'company earnings beat when:5d'] },
-  { key: 'tech',     label: 'טכנולוגיה',  icon: 'microchip',     queries: ['tech stocks when:5d', 'Apple Microsoft Google stock when:5d', 'semiconductor when:5d'] },
-  { key: 'economy',  label: 'כלכלה',      icon: 'bank',          queries: ['Federal Reserve when:5d', 'inflation rate when:5d', 'economy GDP when:5d'] },
-  { key: 'ai',       label: 'AI',         icon: 'brain-circuit', queries: ['artificial intelligence stocks when:5d', 'AI Nvidia when:5d', 'OpenAI when:5d'] },
-];
-
-window.setNewsCategory = (key) => {
-  newsCategory = key;
-  newsPage = 1;
-  renderNewsFilters();
-  renderNews();
-};
-window.setNewsAssetFilter = (sym) => {
-  newsAssetFilter = sym;
-  newsPage = 1;
-  renderNewsFilters();
-  renderNews();
-};
-
-function renderNewsFilters() {
-  const el = document.getElementById('newsFilters');
-  if (!el) return;
-  if (newsTab === 'world') {
-    el.innerHTML = NEWS_CATEGORIES.map(c =>
-      `<button class="news-chip ${c.key === newsCategory ? 'active' : ''}" onclick="setNewsCategory('${c.key}')">
-        <i class="fi fi-tr-${c.icon}"></i>${c.label}
-      </button>`).join('');
-  } else {
-    const assets = [
-      ...(S.stocks || []).map(s => ({ sym: s.sym })),
-      ...(S.crypto || []).map(c => ({ sym: c.sym })),
-    ];
-    if (!assets.length) { el.innerHTML = ''; return; }
-    el.innerHTML =
-      `<button class="news-chip ${!newsAssetFilter ? 'active' : ''}" onclick="setNewsAssetFilter(null)">הכל</button>` +
-      assets.map(a => `<button class="news-chip ${newsAssetFilter === a.sym ? 'active' : ''}" onclick="setNewsAssetFilter('${a.sym}')">${a.sym}</button>`).join('');
-  }
-}
 const NEWS_TTL = 15 * 60 * 1000;       // avoid hammering free RSS gateways
 const NEWS_STALE_TTL = 6 * 60 * 60 * 1000;
 const NEWS_MAX_MINE_ASSETS = 12;
@@ -8833,21 +8817,6 @@ const NEWS_FETCHERS = [
   url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
   url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
 ];
-
-const NEWS_WORLD_FEEDS = [
-  { src: 'Google News · Markets', url: 'https://news.google.com/rss/search?q=' + encodeURIComponent('(stock market OR Wall Street OR global markets) when:5d') + '&hl=en-US&gl=US&ceid=US:en' },
-  { src: 'Google News · Business', url: 'https://news.google.com/rss/search?q=' + encodeURIComponent('(business OR economy OR interest rates) when:5d') + '&hl=en-US&gl=US&ceid=US:en' },
-  { src: 'CNBC Markets', url: 'https://www.cnbc.com/id/20409666/device/rss/rss.html' },
-  { src: 'MarketWatch', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories' },
-];
-
-window.setNewsTab = (t) => {
-  newsTab = t;
-  newsPage = 1;
-  document.getElementById('newsTabWorld')?.classList.toggle('active', t === 'world');
-  document.getElementById('newsTabMine')?.classList.toggle('active', t === 'mine');
-  renderNews();
-};
 
 function newsEscape(value = '') {
   return String(value).replace(/[&<>"']/g, ch => ({
@@ -9016,37 +8985,6 @@ function newsStore(type, items) {
 }
 newsLoadStored();
 
-async function newsLoadWorld(catKey) {
-  const cat = catKey || newsCategory || 'all';
-  // "All" uses the original curated feed mix; specific categories build feeds dynamically
-  let feeds;
-  if (cat === 'all') {
-    feeds = NEWS_WORLD_FEEDS;
-  } else {
-    const def = NEWS_CATEGORIES.find(c => c.key === cat) || NEWS_CATEGORIES[0];
-    feeds = (def.queries || []).map(q => ({
-      src: 'Google News · ' + def.label,
-      url: 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=en-US&gl=US&ceid=US:en'
-    }));
-  }
-  const cached = newsCache.worldByCat[cat];
-  if (cached && Date.now() - cached.fetchedAt < NEWS_TTL) return cached.items;
-
-  const results = await newsMapLimit(feeds, 3, feed => newsFetchRss(feed.url, feed.src));
-  const fresh = newsDedupe(results.flat())
-    .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
-    .slice(0, 60);
-
-  if (fresh.length) {
-    newsCache.worldByCat[cat] = { items: fresh, fetchedAt: Date.now() };
-    if (cat === 'all') { newsCache.world = fresh; newsLastFetch.world = Date.now(); newsStore('world', fresh); }
-    return fresh;
-  }
-  if (cached && Date.now() - cached.fetchedAt < NEWS_STALE_TTL) return cached.items;
-  if (cat === 'all' && newsCache.world && Date.now() - newsLastFetch.world < NEWS_STALE_TTL) return newsCache.world;
-  return [];
-}
-
 async function newsLoadMine() {
   if (newsCache.mine && Date.now() - newsLastFetch.mine < NEWS_TTL) return newsCache.mine;
 
@@ -9059,24 +8997,79 @@ async function newsLoadMine() {
     return [];
   }
 
-  const feeds = assets.map(asset => {
-    const q = asset.kind === 'crypto'
-      ? `"${asset.name}" cryptocurrency when:5d`
-      : `("${asset.sym}" stock OR "${asset.name}") when:5d`;
-    return {
-      ...asset,
-      url: `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`
-    };
+  // One combined query PER KIND (crypto / stock) instead of one request per
+  // asset. Firing up to 12 separate RSS requests through the free public CORS
+  // proxies easily triggers rate limits, silently failing most of them and
+  // leaving only whichever single feed happened to succeed — which is exactly
+  // why only one symbol (e.g. AVAX) could end up showing. Two requests are far
+  // more reliable.
+  const cryptoAssets = assets.filter(a => a.kind === 'crypto');
+  const stockAssets  = assets.filter(a => a.kind === 'stock');
+  const queries = [];
+  if (cryptoAssets.length) {
+    const terms = cryptoAssets.map(a => `"${a.name}"`).join(' OR ');
+    queries.push({ kind: 'crypto', assets: cryptoAssets,
+      url: `https://news.google.com/rss/search?q=${encodeURIComponent(`(${terms}) cryptocurrency when:5d`)}&hl=en-US&gl=US&ceid=US:en` });
+  }
+  if (stockAssets.length) {
+    const terms = stockAssets.map(a => `"${a.sym}"`).join(' OR ');
+    queries.push({ kind: 'stock', assets: stockAssets,
+      url: `https://news.google.com/rss/search?q=${encodeURIComponent(`(${terms}) stock when:5d`)}&hl=en-US&gl=US&ceid=US:en` });
+  }
+
+  const results = await newsMapLimit(queries, 2, async q => {
+    const items = await newsFetchRss(q.url, 'Google News');
+    return items.map(item => {
+      // Tag with whichever held asset's symbol/name appears in the headline or
+      // summary (best-effort match — used for the per-symbol filter chips and
+      // tag pill). Checks the full company name AND its first word, since
+      // headlines often say "SanDisk" rather than the full legal name.
+      const hay = `${item.title} ${item.desc || ''}`.toLowerCase();
+      const hit = q.assets.find(a => {
+        const symRe = new RegExp(`\\b${a.sym.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        if (symRe.test(item.title)) return true;
+        const nameFull = (a.name || '').toLowerCase().trim();
+        if (nameFull && hay.includes(nameFull)) return true;
+        const nameFirst = nameFull.split(/\s+/)[0];
+        return !!(nameFirst && nameFirst.length > 2 && hay.includes(nameFirst));
+      });
+      return { ...item, tagSym: hit?.sym || null, tagName: hit?.name || null, tagKind: q.kind };
+    });
   });
 
-  const results = await newsMapLimit(feeds, 3, async feed => {
-    const items = await newsFetchRss(feed.url, 'Google News');
-    return items.slice(0, 6).map(item => ({ ...item, tagSym: feed.sym, tagName: feed.name }));
-  });
+  // Per-asset fallback for any asset that got NO hits from the combined query
+  // (e.g. its name doesn't appear verbatim in headlines, like "SanDisk" vs
+  // "SNDK"). This runs for EVERY uncovered asset — not just a handful — so no
+  // held asset is silently left with zero coverage. Since most assets are
+  // already matched by the 1-2 combined queries above, this is normally only
+  // a small top-up, not a return to one-request-per-asset for everything.
+  const coveredSyms = new Set(results.flat().map(it => it.tagSym).filter(Boolean));
+  const uncovered = assets.filter(a => !coveredSyms.has(a.sym));
+  if (uncovered.length) {
+    const fallback = await newsMapLimit(uncovered, 2, async asset => {
+      const q = asset.kind === 'crypto'
+        ? `"${asset.name}" cryptocurrency when:5d`
+        : `("${asset.sym}" stock OR "${asset.name}") when:5d`;
+      const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`;
+      const items = await newsFetchRss(url, 'Google News');
+      return items.slice(0, 5).map(item => ({ ...item, tagSym: asset.sym, tagName: asset.name, tagKind: asset.kind }));
+    });
+    results.push(...fallback);
+  }
 
-  const fresh = newsDedupe(results.flat())
-    .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
-    .slice(0, 60);
+  let fresh = newsDedupe(results.flat())
+    .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  // Guarantee diversity: no single symbol may contribute more than a small
+  // share of the pool, so one very-active asset can never crowd out the rest
+  // of the portfolio in the dashboard's top-8 view.
+  const PER_SYMBOL_CAP = 6;
+  const perSymCount = {};
+  fresh = fresh.filter(it => {
+    const key = it.tagSym || '_untagged';
+    perSymCount[key] = (perSymCount[key] || 0) + 1;
+    return perSymCount[key] <= PER_SYMBOL_CAP;
+  }).slice(0, 60);
 
   if (fresh.length) {
     newsCache.mine = fresh;
@@ -9089,18 +9082,69 @@ async function newsLoadMine() {
 }
 
 // Dashboard "כתבות על הנכסים שלי" — Yahoo-style long rows (image + headline + tag)
-// with an empty square reserved on the side for a future ad slot.
-async function renderAssetNews() {
+// with an empty square reserved on the side for a future ad slot. Filterable
+// per individual asset symbol (one chip per holding + an "הכל" chip), the
+// underlying items are tagged with tagSym in newsLoadMine().
+let assetNewsFilter = null;   // null = all, or an exact symbol like 'AVAX'
+let _assetNewsItems = [];     // cached raw items so the filter doesn't re-fetch
+function renderAssetNewsFilter() {
+  const el = document.getElementById('anFilter');
+  if (!el) return;
+  // One chip per asset currently in the portfolio (crypto first, then stocks —
+  // matches the order newsLoadMine() builds feeds in), plus "הכל" at the end.
+  const syms = [
+    ...(S.crypto || []).map(a => a.sym),
+    ...(S.stocks || []).map(s => s.sym),
+  ];
+  if (syms.length < 2) { el.innerHTML = ''; return; }   // nothing meaningful to filter
+  const allChip = `<button class="news-chip ${!assetNewsFilter ? 'active' : ''}" onclick="setAssetNewsFilter(null)">${i18nGetText('הכל')}</button>`;
+  const symChips = syms.map(sym =>
+    `<button class="news-chip ${assetNewsFilter === sym ? 'active' : ''}" onclick="setAssetNewsFilter('${sym}')">${sym}</button>`
+  ).join('');
+  el.innerHTML = allChip + symChips;
+}
+window.setAssetNewsFilter = (sym) => {
+  assetNewsFilter = sym;
+  renderAssetNewsFilter();
+  renderAssetNewsList();
+};
+// Round-robin pick across symbols from an already newest-first sorted list, so
+// the result is a balanced mix rather than dominated by whichever symbol has
+// the most recent articles.
+function pickBalanced(items, n) {
+  const bySym = new Map();
+  const order = [];
+  items.forEach(it => {
+    const key = it.tagSym || '_untagged';
+    if (!bySym.has(key)) { bySym.set(key, []); order.push(key); }
+    bySym.get(key).push(it);
+  });
+  const picked = [];
+  let round = 0;
+  while (picked.length < n && order.some(key => bySym.get(key)[round])) {
+    for (const key of order) {
+      const it = bySym.get(key)[round];
+      if (it) picked.push(it);
+      if (picked.length >= n) break;
+    }
+    round++;
+  }
+  return picked;
+}
+
+function renderAssetNewsList() {
   const host = document.getElementById('assetNews');
   if (!host) return;
-  host.innerHTML = `<div class="asset-news-loading"><div class="spinner"></div> טוען כתבות על הנכסים שלך...</div>`;
-  let items = [];
-  try { items = await newsLoadMine(); } catch (_) {}
-  if (!items || !items.length) {
-    host.innerHTML = `<div class="asset-news-empty">אין כרגע כתבות זמינות על הנכסים שלך. ${navigator.onLine ? 'נסה שוב מאוחר יותר.' : ''}</div>`;
+  let items = _assetNewsItems;
+  if (assetNewsFilter) items = items.filter(n => n.tagSym === assetNewsFilter);
+  if (!items.length) {
+    host.innerHTML = `<div class="asset-news-empty">${i18nGetText('אין כתבות זמינות עבור הסינון הנוכחי.')}</div>`;
     return;
   }
-  const list = items.slice(0, 8);
+  // Pick the 8 shown articles round-robin across symbols (each already sorted
+  // newest-first) so the dashboard always shows a healthy mix instead of one
+  // very-active asset filling every slot.
+  const list = assetNewsFilter ? items.slice(0, 8) : pickBalanced(items, 8);
   const rows = list.map(n => {
     const ago = newsTimeAgo(n.pubDate);
     const tag = n.tagSym ? `<span class="an-tag">${newsEscape(n.tagSym)}</span>` : '';
@@ -9124,114 +9168,21 @@ async function renderAssetNews() {
       </aside>
     </div>`;
 }
-window.renderAssetNews = renderAssetNews;
-
-function buildNewsPager(page, totalPages) {
-  if (totalPages <= 1) return '';
-  const isRtl = document.documentElement.dir !== 'ltr';
-  const labelPrev = isRtl ? 'הקודם' : 'Previous';
-  const labelNext = isRtl ? 'הבא' : 'Next';
-  // window of pages around current (max 7 visible) with ellipses
-  const pages = [];
-  const push = p => pages.push(p);
-  const lo = Math.max(2, page - 2), hi = Math.min(totalPages - 1, page + 2);
-  push(1);
-  if (lo > 2) push('…');
-  for (let p = lo; p <= hi; p++) push(p);
-  if (hi < totalPages - 1) push('…');
-  if (totalPages > 1) push(totalPages);
-  const btns = pages.map(p => p === '…'
-    ? `<span style="color:var(--t3);padding:0 4px">…</span>`
-    : `<button class="${p === page ? 'active' : ''}" onclick="goNewsPage(${p})">${p}</button>`
-  ).join('');
-  return `<div class="news-pager">
-    <button class="news-pager-step" onclick="goNewsPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>${labelPrev}</button>
-    ${btns}
-    <button class="news-pager-step" onclick="goNewsPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>${labelNext}</button>
-  </div>`;
-}
-window.goNewsPage = (p) => {
-  newsPage = Math.max(1, p);
-  renderNews();
-  document.getElementById('app')?.scrollTo?.({ top: 0, behavior: 'smooth' });
-  window.scrollTo?.({ top: 0, behavior: 'smooth' });
-};
-
-async function renderNews() {
-  const el = document.getElementById('newsContent');
-  if (!el) return;
-  const subtabs = document.getElementById('newsSubtabs');
-  if (subtabs) subtabs.style.display = '';
-  const filters = document.getElementById('newsFilters');
-  if (filters) filters.style.display = '';
-  renderNewsFilters();
-
-  el.innerHTML = '<div class="news-list">' + Array(6).fill('<div class="news-skel"></div>').join('') + '</div>';
-  try {
-    let items = newsTab === 'world' ? await newsLoadWorld(newsCategory) : await newsLoadMine();
-    // hard cap: only items from the last 5 days
-    const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
-    const cutoff = Date.now() - FIVE_DAYS_MS;
-    items = items.filter(it => {
-      const d = new Date(it.pubDate).getTime();
-      return !isNaN(d) && d >= cutoff;
-    });
-    if (newsTab === 'mine' && newsAssetFilter) {
-      items = items.filter(it => it.tagSym === newsAssetFilter);
-    }
-    if (!items.length) {
-      if (newsTab === 'mine' && !((S.stocks || []).length + (S.crypto || []).length)) {
-        el.innerHTML = '<div class="news-empty">אין נכסים בתיק שלך עדיין.<br>הוסיפי נכסים דרך כפתור העריכה כדי לראות חדשות ספציפיות.</div>';
-      } else {
-        el.innerHTML = '<div class="news-empty">לא נמצאו חדשות כרגע.<br>נסי לרענן בעוד מספר דקות.</div>';
-      }
-      return;
-    }
-
-    newsCache._displayed = items;
-    el.innerHTML = '<div class="news-list">' + items.map((item, index) => {
-      const sym = item.tagSym
-        ? `<span class="news-item-sym"><i class="fi fi-tr-bolt" style="font-size:10px"></i>${newsEscape(item.tagSym)}</span>`
-        : '';
-      return `<div class="news-item" role="button" tabindex="0" onclick="openNewsArticle(${index})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openNewsArticle(${index})}">
-        <div class="news-item-head">
-          <span class="news-item-src">${newsEscape(item.src)}</span>
-          <span class="news-item-time">${newsEscape(newsTimeAgo(item.pubDate))}</span>
-        </div>
-        <div class="news-item-title">${newsEscape(item.title)}</div>
-        ${item.desc ? `<div class="news-item-desc">${newsEscape(item.desc)}</div>` : ''}
-        ${sym}
-      </div>`;
-    }).join('') + '</div>';
-  } catch (error) {
-    console.error('[News] Render failed:', error);
-    el.innerHTML = '<div class="news-empty">שגיאה בטעינת חדשות.<br>בדקי חיבור לאינטרנט ונסי שוב.</div>';
+async function renderAssetNews() {
+  const host = document.getElementById('assetNews');
+  if (!host) return;
+  host.innerHTML = `<div class="asset-news-loading"><div class="spinner"></div> טוען כתבות על הנכסים שלך...</div>`;
+  let items = [];
+  try { items = await newsLoadMine(); } catch (_) {}
+  _assetNewsItems = items || [];
+  renderAssetNewsFilter();
+  if (!_assetNewsItems.length) {
+    host.innerHTML = `<div class="asset-news-empty">אין כרגע כתבות זמינות על הנכסים שלך. ${navigator.onLine ? 'נסה שוב מאוחר יותר.' : ''}</div>`;
+    return;
   }
+  renderAssetNewsList();
 }
-
-window.openNewsArticle = function(index) {
-  const item = newsCache._displayed?.[index];
-  if (!item?.link) return;
-  const el = document.getElementById('newsContent');
-  const subtabs = document.getElementById('newsSubtabs');
-  const filtersEl = document.getElementById('newsFilters');
-  if (filtersEl) filtersEl.style.display = 'none';
-  if (subtabs) subtabs.style.display = 'none';
-
-  const safeLink = newsEscape(item.link);
-  el.innerHTML = `<div class="news-reader">
-    <div class="news-reader-head">
-      <button class="news-reader-back" onclick="renderNews()"><i class="ph-thin ph-arrow-right"></i> חזרה לחדשות</button>
-      <div class="news-reader-meta"><span>${newsEscape(item.src)}</span><span>${newsEscape(newsTimeAgo(item.pubDate))}</span></div>
-    </div>
-    ${item.img ? `<img class="news-reader-img" src="${newsEscape(item.img)}" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'">` : ''}
-    <div class="news-reader-title">${newsEscape(item.title)}</div>
-    <div class="news-reader-body">
-      ${item.desc ? `<p>${newsEscape(item.desc)}</p>` : '<p>המקור לא סיפק תקציר לכתבה זו.</p>'}
-      <p style="margin-top:22px"><a href="${safeLink}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:7px;background:var(--ac);color:#fff;text-decoration:none;padding:10px 16px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;font-weight:700">לכתבה המלאה באתר המקור <i class="ph-thin ph-arrow-square-out"></i></a></p>
-    </div>
-  </div>`;
-};
+window.renderAssetNews = renderAssetNews;
 
 function renderInsights() {
   const {c, st, g} = tots();
@@ -10259,10 +10210,10 @@ function renderEd() {
       ${list.length === 0 ? `<div class="ed-empty-list"><i class="ph-thin ${cat.icon}"></i> אין עדיין נכסים בקטגוריה זו — הוסף את הראשון למטה</div>` : ''}
     </div>
     <div class="aform">
-      <div class="af-t">+ הוספת נכס חדש</div>
+      <div class="af-t-row"><div class="af-t">+ הוספת נכס חדש</div><button class="af-reset" onclick="resetNewAssetForm()" title="${i18nGetText('איפוס שדות')}"><i class="ph-thin ph-arrow-counter-clockwise ph-sm"></i> איפוס</button></div>
       <div class="fg">
         <div class="ff"><label>סימבול מזהה</label><input id="nS" type="text" autocomplete="off" placeholder="${cat.phSym}" oninput="this.value=this.value.toUpperCase();edPickedId=null;${cat.live?'edAC(this.value);':''}var p=document.getElementById('nP');if(p){p.dataset.manual='';p.classList.remove('lot-autofilled');}updateNewPriceCurrency()" ${cat.live?'onfocus="edAC(this.value)"':''}><div class="ac-box" id="acBox"></div></div>
-        <div class="ff"><label>שם הנכס</label><input id="nN" type="text" placeholder="${cat.phName}"></div>
+        <div class="ff"><label>שם הנכס</label><input id="nN" type="text" placeholder="${cat.phName}" autocomplete="off" oninput="${cat.live?'edAC(this.value, \'acBoxName\');':''}" ${cat.live?'onfocus="edAC(this.value, \'acBoxName\')"':''}><div class="ac-box" id="acBoxName"></div></div>
         <div class="ff"><label>${cat.unit==='מניות'?'כמות מניות':'כמות החזקה'}</label><input id="nQ" type="number" placeholder="${iC?'0.5':'10.5'}" step="any" oninput="onNewQtyInput()"></div>
         <div class="ff"><label>שער קנייה <span style="color:var(--t3);font-size:10px">(${cat.live?'לפי התאריך שנבחר':'הזן ידנית'})</span></label>
           <div class="cur-input-wrap">
@@ -10461,22 +10412,23 @@ function moveAsset(i, dir) {
 
 // ── Symbol autocomplete: Finnhub (stocks) / CoinGecko (crypto), 5 results ──
 let edPickedId = null;
-let acTimer = null, acSeq = 0;
+const acTimers = {};   // per-box debounce timers, keyed by box id
+const acSeqs = {};     // per-box request sequence counters, keyed by box id
 
-function edAC(q) {
-  clearTimeout(acTimer);
-  const box = document.getElementById('acBox');
+function edAC(q, boxId = 'acBox') {
+  clearTimeout(acTimers[boxId]);
+  const box = document.getElementById(boxId);
   if (!box) return;
   q = (q || '').trim();
   if (q.length < 1) { box.classList.remove('show'); box.innerHTML = ''; return; }
   box.innerHTML = '<div class="ac-load">מחפש...</div>';
   box.classList.add('show');
-  acTimer = setTimeout(() => acFetch(q), 300);
+  acTimers[boxId] = setTimeout(() => acFetch(q, boxId), 300);
 }
 
-async function acFetch(q) {
-  const seq = ++acSeq;
-  const box = document.getElementById('acBox');
+async function acFetch(q, boxId = 'acBox') {
+  const seq = (acSeqs[boxId] = (acSeqs[boxId] || 0) + 1);
+  const box = document.getElementById(boxId);
   try {
     let items = [];
     if (edTab === 'crypto') {
@@ -10510,10 +10462,10 @@ async function acFetch(q) {
           return { sym: x.symbol, name: x.description, id: null, thumb: null, exch };
         });
     }
-    if (seq !== acSeq || !box) return;            // a newer search already ran
+    if (seq !== acSeqs[boxId] || !box) return;     // a newer search already ran
     if (!items.length) { box.innerHTML = '<div class="ac-load">לא נמצאו תוצאות</div>'; return; }
     box.innerHTML = items.map(it =>
-      `<div class="ac-item" onmousedown="event.preventDefault();edPick('${it.sym}',\`${(it.name || '').replace(/`/g, '')}\`,${it.id ? `'${it.id}'` : 'null'})">` +
+      `<div class="ac-item" onmousedown="event.preventDefault();edPick('${it.sym}',\`${(it.name || '').replace(/`/g, '')}\`,${it.id ? `'${it.id}'` : 'null'},'${boxId}')">` +
       (it.thumb ? `<img class="ac-thumb" src="${it.thumb}" alt="">` : '') +
       `<span class="ac-sym">${it.sym}</span><span class="ac-name">${it.name || ''}</span>` +
       (it.exch ? `<span class="ac-exch">${it.exch}</span>` : '') +
@@ -10524,12 +10476,13 @@ async function acFetch(q) {
   }
 }
 
-function edPick(sym, name, id) {
+function edPick(sym, name, id, boxId = 'acBox') {
   edPickedId = id;
   const nS = document.getElementById('nS'), nN = document.getElementById('nN');
   if (nS) nS.value = sym;
   if (nN && name) nN.value = name.replace(/\b\w+/g, w => w.length > 3 ? w[0] + w.slice(1).toLowerCase() : w);
-  const box = document.getElementById('acBox');
+  // Close whichever box triggered this pick (symbol or name search).
+  const box = document.getElementById(boxId);
   if (box) { box.classList.remove('show'); box.innerHTML = ''; }
   // Reset the price field and currency lock, update the currency to the new
   // market, and re-fill the per-unit price for the picked symbol.
@@ -10541,8 +10494,11 @@ function edPick(sym, name, id) {
   document.getElementById('nQ')?.focus();
 }
 document.addEventListener('click', e => {
-  const box = document.getElementById('acBox');
-  if (box && !e.target.closest('#acBox') && e.target.id !== 'nS') box.classList.remove('show');
+  ['acBox', 'acBoxName'].forEach(id => {
+    const box = document.getElementById(id);
+    const inputId = id === 'acBox' ? 'nS' : 'nN';
+    if (box && !e.target.closest(`#${id}`) && e.target.id !== inputId) box.classList.remove('show');
+  });
 });
 
 // ── Lots history block for the detail modal (read-only, with per-lot P&L) ──
@@ -10956,6 +10912,31 @@ function updateNewPriceCurrency() {
 }
 window.updateNewPriceCurrency = updateNewPriceCurrency;
 window.onNewQtyInput = onNewQtyInput;
+
+// Reset button (✕): clear every field in "+ הוספת נכס חדש" back to its blank
+// defaults — symbol, name, quantity, price (and currency lock), and the date
+// back to today. Does not touch the existing asset list above the form.
+function resetNewAssetForm() {
+  const nS = document.getElementById('nS');
+  const nN = document.getElementById('nN');
+  const nQ = document.getElementById('nQ');
+  const nP = document.getElementById('nP');
+  const nD = document.getElementById('nD');
+  const nPCur = document.getElementById('nPCur');
+  if (nS) nS.value = '';
+  if (nN) nN.value = '';
+  if (nQ) nQ.value = '';
+  if (nP) { nP.value = ''; nP.dataset.manual = ''; nP.classList.remove('lot-autofilled'); }
+  if (nD) nD.value = new Date().toISOString().slice(0, 10);
+  if (nPCur) { nPCur.value = 'USD'; nPCur.dataset.manualCur = ''; }
+  edPickedId = null;
+  ['acBox', 'acBoxName'].forEach(id => {
+    const box = document.getElementById(id);
+    if (box) { box.classList.remove('show'); box.innerHTML = ''; }
+  });
+  nS?.focus();
+}
+window.resetNewAssetForm = resetNewAssetForm;
 
 function addA() {
   const sym   = (document.getElementById('nS')?.value || '').trim().toUpperCase();
