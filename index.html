@@ -383,10 +383,10 @@ body.light .ni { color: rgba(0, 0, 0, 0.55); }
 body.light .ni:hover { color: rgba(0, 0, 0, 0.85); }
 body.light .ni.active {
   color: #000;
-  background: linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.02) 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(0,0,0,0.11) 0%, rgba(0,0,0,0.04) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.08);
 }
-body.light .ni.active { background: transparent; font-weight: 700; }
 .ni-ico { font-size: 22px; line-height: 1; display: block; }
 .ni-lbl { font-size: 10.5px; font-weight: 500; letter-spacing: 0.3px; opacity: 0.95; }
 
@@ -619,6 +619,9 @@ body.light .period-summary-cell.is-primary { background:#fff; border:1px solid c
 .period-summary-value { font-family:var(--font-mono); font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .period-summary-pct { font-family:var(--font-mono); font-size:10px; margin-top:3px; }
 .period-summary-note { margin-top:9px; padding-top:8px; border-top:1px solid var(--b1); color:var(--t3); font-size:9px; line-height:1.5; }
+.period-summary-paid { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:9px; padding-top:9px; border-top:1px solid var(--b1); }
+.period-summary-paid-l { font-size:11px; color:var(--t3); font-weight:600; }
+.period-summary-paid-v { font-size:14px; color:var(--t1); font-weight:700; font-family:var(--font-mono); }
 @media (max-width:640px) {
   .period-presets { flex-wrap:wrap; gap:6px; }
   .period-presets .pb2 { flex:1 1 auto; min-width:0; text-align:center; padding:8px 10px; font-size:12px; }
@@ -3438,6 +3441,30 @@ const cryptoTotalPnl = a => {
 
 const cv = (a) => { const p = S.cp[a.id]; return p ? p.usd * S.fx * cQty(a) : 0; };
 const cc = (a) => S.cp[a.id]?.ch24 ?? null;
+// Total amount actually paid (cost basis) for everything currently held, in ILS.
+// Stocks are converted from their own native listing currency; crypto from USD.
+// Only counts categories that are currently shown (consistent with tots()).
+function totalCostBasisILS() {
+  let total = 0;
+  if (catInTotal('crypto')) {
+    S.crypto.forEach(a => {
+      const entry = avgEntry(a);     // USD per unit
+      const qty = cQty(a);
+      if (entry != null && qty) total += entry * qty * S.fx;
+    });
+  }
+  if (catInTotal('stocks')) {
+    S.stocks.forEach(s => {
+      const entry = avgEntry(s);     // native currency per unit
+      const sh = getShares(s);
+      if (entry != null && sh) {
+        const nativeCur = (S.sp?.[s.sym]?.currency || 'USD').toUpperCase();
+        total += nativeToILS(entry * sh, nativeCur);
+      }
+    });
+  }
+  return total;
+}
 // Hebrew calendar-day label like "15 ביוני" — used to title daily P&L widgets
 const HE_MONTHS = ['בינואר','בפברואר','במרץ','באפריל','במאי','ביוני','ביולי','באוגוסט','בספטמבר','באוקטובר','בנובמבר','בדצמבר'];
 
@@ -4252,6 +4279,9 @@ const I18N = {
   'איפוס':'Reset',
   'איפוס שדות':'Reset fields',
 
+  // ── Total paid summary line ──
+  'סה״כ שולם על הנכסים המוחזקים':'Total paid for held assets',
+
 };
 const I18N_KEYS = Object.keys(I18N).sort((a, b) => b.length - a.length);
 const HEB_RE = /[\u0590-\u05FF]/;
@@ -4892,6 +4922,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'Сброс',
     'איפוס שדות':'Сбросить поля',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'Всего уплачено за удерживаемые активы',
   },
   es: {
     'שוק אמריקאי':'Mercado de EE. UU.',
@@ -5359,6 +5391,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'Restablecer',
     'איפוס שדות':'Restablecer campos',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'Total pagado por los activos en cartera',
   },
   fr: {
     'שוק אמריקאי':'Marché américain',
@@ -5826,6 +5860,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'Réinitialiser',
     'איפוס שדות':'Réinitialiser les champs',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'Total payé pour les actifs détenus',
   },
   ar: {
     'שוק אמריקאי':'السوق الأمريكي',
@@ -6293,6 +6329,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'إعادة تعيين',
     'איפוס שדות':'إعادة تعيين الحقول',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'إجمالي المبلغ المدفوع مقابل الأصول المملوكة',
   },
   de: {
     'שוק אמריקאי':'US-Markt',
@@ -6760,6 +6798,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'Zurücksetzen',
     'איפוס שדות':'Felder zurücksetzen',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'Gesamt gezahlt für gehaltene Vermögenswerte',
   },
   zh: {
     'שוק אמריקאי':'美国市场',
@@ -7227,6 +7267,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'重置',
     'איפוס שדות':'重置字段',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'持有资产的总支付金额',
   },
   nl: {
     'שוק אמריקאי':'Amerikaanse markt',
@@ -7694,6 +7736,8 @@ const LANG_DICTS = {
       // ── Add-asset form reset strings ──
     'איפוס':'Reset',
     'איפוס שדות':'Velden resetten',
+      // ── Total paid summary line ──
+    'סה״כ שולם על הנכסים המוחזקים':'Totaal betaald voor activa in bezit',
   },
 };
 
@@ -11323,7 +11367,9 @@ function dashRenderPeriodData(data,{cached=false}={}){
     return `<div class="period-asset-card" onclick="openDet('${x.sym}','${x.type}')"><div class="period-asset-head"><div class="period-asset-icon">${x.icon||''}</div><div class="period-asset-meta"><div class="period-asset-symbol">${x.sym}</div><div class="period-asset-name">${x.name||''}</div></div></div><div class="period-asset-pct" style="color:${up?'var(--gr)':'var(--rd)'}">${fPct(x.pct)}</div><div class="period-asset-pnl" style="color:${up?'var(--gr)':'var(--rd)'}">${up?'+':''}${fILS(x.pnl)}</div><div class="period-asset-from">${from}</div></div>`;
   }).join('');
   const rangeText=dashRangeLabel(data.range);
-  const summary=`<div class="period-summary"><div class="period-summary-head"><div class="period-summary-title">סיכום רווח והפסד בתקופה</div><div class="period-summary-range">${rangeText}</div></div><div class="period-summary-grid">${dashSummaryCell('כלל התיק',data.total,true)}${dashSummaryCell('מניות',data.stocks)}${dashSummaryCell('קריפטו',data.crypto)}</div><div class="period-summary-note">רכישות שבוצעו בתוך התקופה מחושבות ממחיר ותאריך הקנייה שהוזנו — ולא מתחילת הטווח. כך הוספת נכס חדש אינה נרשמת בטעות כרווח.</div></div>`;
+  const totalPaid = totalCostBasisILS();
+  const paidLine = `<div class="period-summary-paid"><span class="period-summary-paid-l">${i18nGetText('סה״כ שולם על הנכסים המוחזקים')}</span><span class="period-summary-paid-v">${fILS(totalPaid)}</span></div>`;
+  const summary=`<div class="period-summary"><div class="period-summary-head"><div class="period-summary-title">סיכום רווח והפסד בתקופה</div><div class="period-summary-range">${rangeText}</div></div><div class="period-summary-grid">${dashSummaryCell('כלל התיק',data.total,true)}${dashSummaryCell('מניות',data.stocks)}${dashSummaryCell('קריפטו',data.crypto)}</div>${paidLine}<div class="period-summary-note">רכישות שבוצעו בתוך התקופה מחושבות ממחיר ותאריך הקנייה שהוזנו — ולא מתחילת הטווח. כך הוספת נכס חדש אינה נרשמת בטעות כרווח.</div></div>`;
   const cardsBlock = cards
     ? `<div class="period-cards-toggle" id="periodCardsToggle" onclick="togglePeriodCards()"><span><i class="ph-thin ph-squares-four ph-sm"></i> פירוט נכסים (${data.items.length})</span><i class="ph-thin ph-caret-down period-cards-caret" id="periodCardsCaret"></i></div><div class="period-cards-wrap" id="periodCardsWrap">${cards}</div>`
     : '';
